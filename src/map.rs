@@ -33,11 +33,7 @@ pub mod maps {
 		}
 
 		pub fn set(&mut self, x: usize, y: usize, value: u8) {
-			if x < self._width && y < self._height {
-				self._map[clamp(x, 0, self._width - 1)][clamp(y, 0, self._height)] = value;
-			} else {
-				panic!("Out of bounds!");
-			}
+			self._map[clamp(x, 0, self._width - 1)][clamp(y, 0, self._height)] = value;
 		}
 	}
 }

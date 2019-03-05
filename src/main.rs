@@ -9,12 +9,16 @@ use tcod::console::*;
 use tcod::map::{FovAlgorithm, Map as FovMap};
 
 fn main() {
-    let mut map = Map::new_default(20, 20, 0);
-    for y in 0..map.height() {
-        for x in 0..map.width() {
-            print!("{}", map.get(x, y));
-        }
-        println!("");
+    let mut arr = vec![0; 10];
+    for i in 0..arr.len() {
+        arr[i] = i;
     }
-    println!("{}", clamp(1.5, 0.5, 1.4));
+    for i in 0..arr.len() {
+        print!("{}", arr[i]);
+    }
+    shufflearray(&mut arr);
+    println!("");
+    for i in 0..arr.len() {
+        print!("{}", arr[i]);
+    }
 }
