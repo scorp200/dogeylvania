@@ -28,6 +28,16 @@ pub mod dogemaths {
 		(c - a) / (b - a)
 	}
 
+	pub fn shufflearray<T>(arr: &mut Vec<T>) {
+		let mut currentIndex = arr.len();
+		let mut randomIndex: usize;
+		while 0 != currentIndex {
+			randomIndex = (rand::random::<f32>() * currentIndex as f32).floor() as usize;
+			currentIndex -= 1;
+			arr.swap(currentIndex, randomIndex);
+		}
+	}
+
 	pub struct Rect {
 		pub x: i32,
 		pub y: i32,
@@ -71,16 +81,6 @@ pub mod dogemaths {
 
 		pub fn pointinside(&self, point: (i32, i32)) -> bool {
 			self.topleft() < point && self.topright() > point
-		}
-	}
-
-	pub fn shufflearray<T>(arr: &mut Vec<T>) {
-		let mut currentIndex = arr.len();
-		let mut randomIndex: usize;
-		while 0 != currentIndex {
-			randomIndex = (rand::random::<f32>() * currentIndex as f32).floor() as usize;
-			currentIndex -= 1;
-			arr.swap(currentIndex, randomIndex);
 		}
 	}
 }
