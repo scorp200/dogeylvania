@@ -6,6 +6,7 @@ use dogeylvania::actors::*;
 use dogeylvania::dogemaths::*;
 use dogeylvania::maps::*;
 use dogeylvania::tiles::*;
+use dogeylvania::generator;
 use tcod::colors::{self, Color};
 use tcod::console::*;
 use tcod::input::{self, Event, Mouse};
@@ -60,7 +61,8 @@ fn main() {
         SCREEN_HEIGHT as usize - 10,
         Tile::gold(),
     );
-    map.set(5, 5, Tile::empty());
+    //map.set(5, 5, Tile::empty());
+	generator::generate(&mut map);
     let mut screen = Screen {
         root: root,
         con: Offscreen::new(map.width() as i32, map.height() as i32),
