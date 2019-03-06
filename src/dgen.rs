@@ -3,6 +3,10 @@ pub mod generator {
 	use crate::tiles::*;
 
 	pub fn generate(map: &mut Map) {
-		map.set(5, 5, Tile::empty());
+		for y in 1..map.height()-1 as usize {
+    	    for x in 1..map.width()-1 as usize {
+				map.set(x, y, Tile::empty());
+    		}
+    	}
 	}
 }
