@@ -25,15 +25,12 @@ fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map) {
         for x in 0..map.width() {
             let tile = &map.get(x, y);
 
-            if tile.color.is_some() {
-                let bg = &tile.color.unwrap();
+            if let Some(bg) = &tile.color.as_ref() {
                 screen
                     .con
                     .set_char_background(x as i32, y as i32, bg.1, BackgroundFlag::Set);
             }
-
-            if tile.char.is_some() {
-                let chara = &tile.char.unwrap();
+            if let Some(chara) = &tile.char.as_ref() {
                 screen.con.set_default_foreground(chara.1);
                 screen
                     .con
@@ -63,6 +60,7 @@ fn main() {
         SCREEN_HEIGHT as usize - 10,
         Tile::gold(),
     );
+    map.set(5, 5, Tile::empty());
     let mut screen = Screen {
         root: root,
         con: Offscreen::new(map.width() as i32, map.height() as i32),
