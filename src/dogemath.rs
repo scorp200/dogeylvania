@@ -38,6 +38,18 @@ pub mod dogemaths {
 		}
 	}
 
+	pub mod Direction {
+		pub const NORTH: (i32, i32) = (0, -1);
+		pub const SOUTH: (i32, i32) = (0, 1);
+		pub const EAST: (i32, i32) = (1, 0);
+		pub const WEST: (i32, i32) = (-1, 0);
+
+		pub const NORTHEAST: (i32, i32) = (1, -1);
+		pub const NORTHWEST: (i32, i32) = (-1, -1);
+		pub const SOUTHEAST: (i32, i32) = (1, 1);
+		pub const SOUTHWEST: (i32, i32) = (-1, 1);
+	}
+
 	pub struct Rect {
 		pub x: i32,
 		pub y: i32,

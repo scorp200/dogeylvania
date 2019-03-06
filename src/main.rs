@@ -5,6 +5,7 @@ extern crate tcod;
 use dogeylvania::actors::*;
 use dogeylvania::dogemaths::*;
 use dogeylvania::maps::*;
+use dogeylvania::tiles::*;
 use tcod::colors::{self, Color};
 use tcod::console::*;
 use tcod::input::{self, Event, Mouse};
@@ -22,10 +23,22 @@ struct Screen {
 fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map) {
     for y in 0..map.height() {
         for x in 0..map.width() {
-            screen.con.set_default_foreground(map.get_color(x, y));
-            screen
-                .con
-                .put_char(x as i32, y as i32, map.get_char(x, y), BackgroundFlag::None);
+            let tile = &map.get(x, y);
+
+            if tile.color.is_some() {
+                let bg = &tile.color.unwrap();
+                screen
+                    .con
+                    .set_char_background(x as i32, y as i32, bg.1, BackgroundFlag::Set);
+            }
+
+            if tile.char.is_some() {
+                let chara = &tile.char.unwrap();
+                screen.con.set_default_foreground(chara.1);
+                screen
+                    .con
+                    .put_char(x as i32, y as i32, chara.0, BackgroundFlag::None);
+            }
         }
     }
     blit(
@@ -45,7 +58,11 @@ fn main() {
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Dogeylvania")
         .init();
-    let mut map = Map::new_default(SCREEN_WIDTH as usize, SCREEN_HEIGHT as usize - 10, 0);
+    let mut map = Map::new_default(
+        SCREEN_WIDTH as usize,
+        SCREEN_HEIGHT as usize - 10,
+        Tile::gold(),
+    );
     let mut screen = Screen {
         root: root,
         con: Offscreen::new(map.width() as i32, map.height() as i32),

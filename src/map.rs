@@ -1,24 +1,15 @@
 pub mod maps {
 	use crate::dogemaths::*;
+	use crate::tiles::*;
 	use tcod::colors::{self, Color};
 	pub struct Map {
 		_width: usize,
 		_height: usize,
-		_map: Vec<Vec<usize>>,
+		_map: Vec<Vec<Tile>>,
 	}
 
-	const MAP_INDEX: &'static [(char, Color)] = &[
-		(',', colors::DARK_GREEN),
-		('^', colors::DARK_GREY),
-		('^', colors::DARK_GREY),
-		('^', colors::DARK_GREY),
-		('^', colors::DARK_GREY),
-		('^', colors::DARK_GREY),
-		('^', colors::DARK_GREY),
-	];
-
 	impl Map {
-		pub fn new(width: usize, height: usize, map: Vec<Vec<usize>>) -> Self {
+		pub fn new(width: usize, height: usize, map: Vec<Vec<Tile>>) -> Self {
 			Map {
 				_width: width,
 				_height: height,
@@ -26,7 +17,7 @@ pub mod maps {
 			}
 		}
 
-		pub fn new_default(width: usize, height: usize, default: usize) -> Self {
+		pub fn new_default(width: usize, height: usize, default: Tile) -> Self {
 			let map = vec![vec![default; height]; width];
 			Map::new(width, height, map)
 		}
@@ -39,18 +30,11 @@ pub mod maps {
 			self._height
 		}
 
-		pub fn get(&self, x: usize, y: usize) -> usize {
+		pub fn get(&self, x: usize, y: usize) -> Tile {
 			self._map[clamp(x, 0, self._width - 1)][clamp(y, 0, self._height)]
 		}
 
-		pub fn get_char(&self, x: usize, y: usize) -> char {
-			MAP_INDEX[self._map[x][y]].0
-		}
-		pub fn get_color(&self, x: usize, y: usize) -> Color {
-			MAP_INDEX[self._map[x][y]].1
-		}
-
-		pub fn set(&mut self, x: usize, y: usize, value: usize) {
+		pub fn set(&mut self, x: usize, y: usize, value: Tile) {
 			self._map[clamp(x, 0, self._width - 1)][clamp(y, 0, self._height)] = value;
 		}
 	}
