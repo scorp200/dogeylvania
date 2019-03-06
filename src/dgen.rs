@@ -1,6 +1,6 @@
 pub mod generator {
-	use crate::maps::*;
-	use crate::tiles::*;
+	use crate::maps::{Map};
+	use crate::tiles::{Tile};
 
 	pub fn generate(map: &mut Map) {
 		rectangle(map, 1, 1, map.width()-1, map.height()-1, Tile::empty);
