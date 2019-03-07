@@ -11,12 +11,18 @@ pub use map::maps;
 pub use skill::skills;
 pub use tile::tiles;
 
-pub mod screens {
+pub mod dogestuff {
 	use tcod::console::{Offscreen, Root};
 	use tcod::input::{self, Event, Mouse};
 	pub struct Screen {
 		pub root: Root,
 		pub con: Offscreen,
 		pub mouse: Mouse,
+	}
+	#[derive(PartialEq, Debug)]
+	pub enum Actions {
+		ActionTook,
+		No,
+		Exit,
 	}
 }

@@ -1,8 +1,9 @@
 pub mod skills {
 	use crate::actors::*;
 	use crate::dogemaths::Direction;
+	use crate::dogestuff::{Actions, Screen};
 	use crate::maps::*;
-	use crate::screens::Screen;
+	use Actions::*;
 
 	#[derive(Clone, Copy, PartialEq, Debug)]
 	pub enum SkillTypes {
@@ -36,7 +37,7 @@ pub mod skills {
 			map: &Map,
 			actors: &mut [Actor],
 			screen: &mut Screen,
-		) -> bool {
+		) -> Actions {
 			let skill_id = actors[id]
 				.skills
 				.iter()
@@ -51,12 +52,12 @@ pub mod skills {
 							&Map,
 							&mut [Actor],
 							&mut Screen,
-						) -> bool = match actors[id].skills[skill_id].skill {
+						) -> Actions = match actors[id].skills[skill_id].skill {
 							SkillTypes::move_attack => move_by,
 							SkillTypes::hit => move_attack,
 						};
 						let used = on_use(id, dir, val, map, actors, screen);
-						if used {
+						if used == ActionTook {
 							actors[id].skills[skill_id].cool_down_left =
 								actors[id].skills[skill_id].cool_down;
 						}
@@ -66,10 +67,10 @@ pub mod skills {
 							"Skill can be used in {} turns",
 							actors[id].skills[skill_id].cool_down_left
 						);
-						false
+						No
 					}
 				}
-				None => false,
+				None => No,
 			}
 		}
 	}
@@ -80,9 +81,9 @@ pub mod skills {
 		map: &Map,
 		actors: &mut [Actor],
 		screen: &mut Screen,
-	) -> bool {
+	) -> Actions {
 		println!("hitting someone...");
-		true
+		ActionTook
 	}
 
 	pub fn move_attack(
@@ -92,7 +93,7 @@ pub mod skills {
 		map: &Map,
 		actors: &mut [Actor],
 		screen: &mut Screen,
-	) -> bool {
+	) -> Actions {
 		let (new_x, new_y) = (actors[id].x + (dir.0 * val), actors[id].y + (dir.1 * val));
 		let target_id = actors
 			.iter()
@@ -112,14 +113,14 @@ pub mod skills {
 		map: &Map,
 		actors: &mut [Actor],
 		screen: &mut Screen,
-	) -> bool {
+	) -> Actions {
 		let (new_x, new_y) = (actors[id].x + (dir.0 * val), actors[id].y + (dir.1 * val));
 		if Map::is_blocked(map, new_x as usize, new_y as usize) {
 			actors[id].x = new_x;
 			actors[id].y = new_y;
 			println!("{} moved to {},{}", actors[id].name, new_x, new_y);
-			return true;
+			return ActionTook;
 		}
-		false
+		No
 	}
 }

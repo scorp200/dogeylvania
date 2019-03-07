@@ -1,7 +1,7 @@
 pub mod actors {
 	use crate::dogemaths::*;
 	use crate::maps::*;
-	use crate::screens::Screen;
+	use crate::dogestuff::Screen;
 	use crate::skills::*;
 	use tcod::colors::{self, Color};
 	use tcod::console::*;

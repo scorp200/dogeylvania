@@ -4,9 +4,9 @@ extern crate tcod;
 
 use dogeylvania::actors::*;
 use dogeylvania::dogemaths::*;
+use dogeylvania::dogestuff::{Actions, Screen};
 use dogeylvania::generator;
 use dogeylvania::maps::*;
-use dogeylvania::screens::Screen;
 use dogeylvania::skills::{Skill, SkillTypes};
 use dogeylvania::tiles::*;
 use tcod::colors::{self, Color};
@@ -17,13 +17,6 @@ use tcod::map::{FovAlgorithm, Map as FovMap};
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
 
-#[derive(PartialEq, Debug)]
-enum Actions {
-    ActionTook,
-    No,
-    Exit,
-}
-
 fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> Actions {
     use tcod::input::KeyCode::*;
     use Actions::*;
@@ -31,52 +24,28 @@ fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> A
     match key {
         Key { code: Escape, .. } => Exit,
         Key { code: Up, .. } | Key { code: NumPad8, .. } => {
-            match Skill::use_skill(move_attack, 0, Direction::NORTH, 1, map, actors, screen) {
-                true => ActionTook,
-                false => No,
-            }
+            Skill::use_skill(move_attack, 0, Direction::NORTH, 1, map, actors, screen)
         }
         Key { code: Down, .. } | Key { code: NumPad2, .. } => {
-            match Skill::use_skill(move_attack, 0, Direction::SOUTH, 1, map, actors, screen) {
-                true => ActionTook,
-                false => No,
-            }
+            Skill::use_skill(move_attack, 0, Direction::SOUTH, 1, map, actors, screen)
         }
         Key { code: Left, .. } | Key { code: NumPad4, .. } => {
-            match Skill::use_skill(move_attack, 0, Direction::WEST, 1, map, actors, screen) {
-                true => ActionTook,
-                false => No,
-            }
+            Skill::use_skill(move_attack, 0, Direction::WEST, 1, map, actors, screen)
         }
         Key { code: Right, .. } | Key { code: NumPad6, .. } => {
-            match Skill::use_skill(move_attack, 0, Direction::EAST, 1, map, actors, screen) {
-                true => ActionTook,
-                false => No,
-            }
+            Skill::use_skill(move_attack, 0, Direction::EAST, 1, map, actors, screen)
         }
         Key { code: NumPad9, .. } => {
-            match Skill::use_skill(move_attack, 0, Direction::NORTHEAST, 1, map, actors, screen) {
-                true => ActionTook,
-                false => No,
-            }
+            Skill::use_skill(move_attack, 0, Direction::NORTHEAST, 1, map, actors, screen)
         }
         Key { code: NumPad7, .. } => {
-            match Skill::use_skill(move_attack, 0, Direction::NORTHWEST, 1, map, actors, screen) {
-                true => ActionTook,
-                false => No,
-            }
+            Skill::use_skill(move_attack, 0, Direction::NORTHWEST, 1, map, actors, screen)
         }
         Key { code: NumPad3, .. } => {
-            match Skill::use_skill(move_attack, 0, Direction::SOUTHEAST, 1, map, actors, screen) {
-                true => ActionTook,
-                false => No,
-            }
+            Skill::use_skill(move_attack, 0, Direction::SOUTHEAST, 1, map, actors, screen)
         }
         Key { code: NumPad1, .. } => {
-            match Skill::use_skill(move_attack, 0, Direction::SOUTHWEST, 1, map, actors, screen) {
-                true => ActionTook,
-                false => No,
-            }
+            Skill::use_skill(move_attack, 0, Direction::SOUTHWEST, 1, map, actors, screen)
         }
 
         _ => No,
