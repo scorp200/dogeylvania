@@ -21,34 +21,22 @@ fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> A
     use tcod::input::KeyCode::*;
     use Actions::*;
     use SkillTypes::*;
-    match key {
-        Key { code: Escape, .. } => Exit,
-        Key { code: Up, .. } | Key { code: NumPad8, .. } => {
-            Skill::use_skill(move_attack, 0, Direction::NORTH, 1, map, actors, screen)
-        }
-        Key { code: Down, .. } | Key { code: NumPad2, .. } => {
-            Skill::use_skill(move_attack, 0, Direction::SOUTH, 1, map, actors, screen)
-        }
-        Key { code: Left, .. } | Key { code: NumPad4, .. } => {
-            Skill::use_skill(move_attack, 0, Direction::WEST, 1, map, actors, screen)
-        }
-        Key { code: Right, .. } | Key { code: NumPad6, .. } => {
-            Skill::use_skill(move_attack, 0, Direction::EAST, 1, map, actors, screen)
-        }
-        Key { code: NumPad9, .. } => {
-            Skill::use_skill(move_attack, 0, Direction::NORTHEAST, 1, map, actors, screen)
-        }
-        Key { code: NumPad7, .. } => {
-            Skill::use_skill(move_attack, 0, Direction::NORTHWEST, 1, map, actors, screen)
-        }
-        Key { code: NumPad3, .. } => {
-            Skill::use_skill(move_attack, 0, Direction::SOUTHEAST, 1, map, actors, screen)
-        }
-        Key { code: NumPad1, .. } => {
-            Skill::use_skill(move_attack, 0, Direction::SOUTHWEST, 1, map, actors, screen)
-        }
-
-        _ => No,
+    //            Skill::use_skill(move_attack, 0, Direction::NORTH, 1, map, actors, screen)
+    let dir = match key {
+        Key { code: Escape, .. } => return Exit,
+        Key { code: Up, .. } | Key { code: NumPad8, .. } => Some(Direction::NORTH),
+        Key { code: Down, .. } | Key { code: NumPad2, .. } => Some(Direction::SOUTH),
+        Key { code: Left, .. } | Key { code: NumPad4, .. } => Some(Direction::WEST),
+        Key { code: Right, .. } | Key { code: NumPad6, .. } => Some(Direction::EAST),
+        Key { code: NumPad9, .. } => Some(Direction::NORTHEAST),
+        Key { code: NumPad7, .. } => Some(Direction::NORTHWEST),
+        Key { code: NumPad3, .. } => Some(Direction::SOUTHEAST),
+        Key { code: NumPad1, .. } => Some(Direction::SOUTHWEST),
+        _ => None,
+    };
+    match dir {
+        Some(dir) => Skill::use_skill(move_attack, 0, dir, 1, map, actors, screen),
+        None => No,
     }
 }
 
