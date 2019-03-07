@@ -21,7 +21,6 @@ fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> A
     use tcod::input::KeyCode::*;
     use Actions::*;
     use SkillTypes::*;
-    //            Skill::use_skill(move_attack, 0, Direction::NORTH, 1, map, actors, screen)
     let dir = match key {
         Key { code: Escape, .. } => return Exit,
         Key { code: Up, .. } | Key { code: NumPad8, .. } => Some(Direction::NORTH),
@@ -36,7 +35,7 @@ fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> A
     };
     match dir {
         Some(dir) => Skill::use_skill(move_attack, 0, dir, 1, map, actors, screen),
-        None => No,
+        None => NoAction,
     }
 }
 

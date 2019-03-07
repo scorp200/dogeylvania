@@ -67,10 +67,10 @@ pub mod skills {
 							"Skill can be used in {} turns",
 							actors[id].skills[skill_id].cool_down_left
 						);
-						No
+						NoAction
 					}
 				}
-				None => No,
+				None => NoAction,
 			}
 		}
 	}
@@ -121,6 +121,6 @@ pub mod skills {
 			println!("{} moved to {},{}", actors[id].name, new_x, new_y);
 			return ActionTook;
 		}
-		No
+		NoAction
 	}
 }
