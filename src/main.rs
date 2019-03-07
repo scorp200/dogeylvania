@@ -77,6 +77,7 @@ fn main() {
     );
     player.skills.push(Skill::move_attack());
     player.skills[0].use_skill(0, (Direction::SOUTH, 1), &map, &mut actors, &mut screen);
+    player.skills[0].use_skill(0, (Direction::SOUTH, 1), &map, &mut actors, &mut screen);
     actors.push(player);
 
     while !screen.root.window_closed() {

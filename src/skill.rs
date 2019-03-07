@@ -45,6 +45,8 @@ pub mod skills {
 				if on_use(id, dir, map, actors, screen) {
 					self.cool_down_left = self.cool_down;
 				}
+			} else {
+				println!("Skill can be used in {} turns", self.cool_down_left);
 			}
 		}
 	}
