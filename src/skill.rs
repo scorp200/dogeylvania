@@ -4,7 +4,7 @@ pub mod skills {
 	use crate::maps::*;
 	use crate::screens::Screen;
 
-	#[derive(PartialEq, Debug)]
+	#[derive(Clone, Copy, PartialEq, Debug)]
 	pub enum SkillTypes {
 		move_attack,
 		hit,
@@ -29,59 +29,97 @@ pub mod skills {
 		}
 
 		pub fn use_skill(
-			&mut self,
+			skilltype: SkillTypes,
 			id: usize,
-			dir: ((i32, i32), i32),
+			dir: (i32, i32),
+			val: i32,
 			map: &Map,
 			actors: &mut [Actor],
 			screen: &mut Screen,
-		) {
-			if self.cool_down_left == 0 {
-				let on_use: fn(usize, ((i32, i32), i32), &Map, &mut [Actor], &mut Screen) -> bool =
-					match self.skill {
-						SkillTypes::move_attack => move_by,
-						SkillTypes::hit => move_attack,
-					};
-				if on_use(id, dir, map, actors, screen) {
-					self.cool_down_left = self.cool_down;
+		) -> bool {
+			let skill_id = actors[id]
+				.skills
+				.iter()
+				.position(|skill| skill.skill == skilltype);
+			match skill_id {
+				Some(skill_id) => {
+					if actors[id].skills[skill_id].cool_down_left == 0 {
+						let on_use: fn(
+							usize,
+							(i32, i32),
+							i32,
+							&Map,
+							&mut [Actor],
+							&mut Screen,
+						) -> bool = match actors[id].skills[skill_id].skill {
+							SkillTypes::move_attack => move_by,
+							SkillTypes::hit => move_attack,
+						};
+						let used = on_use(id, dir, val, map, actors, screen);
+						if used {
+							actors[id].skills[skill_id].cool_down_left =
+								actors[id].skills[skill_id].cool_down;
+						}
+						used
+					} else {
+						println!(
+							"Skill can be used in {} turns",
+							actors[id].skills[skill_id].cool_down_left
+						);
+						false
+					}
 				}
-			} else {
-				println!("Skill can be used in {} turns", self.cool_down_left);
+				None => false,
 			}
 		}
 	}
 
-	pub fn move_attack(
+	pub fn hit(
 		id: usize,
 		dir: ((i32, i32), i32),
 		map: &Map,
 		actors: &mut [Actor],
 		screen: &mut Screen,
 	) -> bool {
-		let (new_x, new_y) = (
-			actors[id].x + ((dir.0).0 * dir.1),
-			actors[id].y + ((dir.0).1 * dir.1),
-		);
+		println!("hitting someone...");
+		true
+	}
+
+	pub fn move_attack(
+		id: usize,
+		dir: (i32, i32),
+		val: i32,
+		map: &Map,
+		actors: &mut [Actor],
+		screen: &mut Screen,
+	) -> bool {
+		let (new_x, new_y) = (actors[id].x + (dir.0 * val), actors[id].y + (dir.1 * val));
 		let target_id = actors
 			.iter()
 			.position(|actor| (actor.x, actor.y) == (new_x, new_y));
 		match target_id {
 			Some(target_id) => {
-				println!("attacking...");
-				true
+				Skill::use_skill(actors[id].default_skill, id, dir, val, map, actors, screen)
 			}
-			None => move_by(id, dir, map, actors, screen),
+			None => move_by(id, dir, val, map, actors, screen),
 		}
 	}
 
 	pub fn move_by(
 		id: usize,
-		dir: ((i32, i32), i32),
+		dir: (i32, i32),
+		val: i32,
 		map: &Map,
 		actors: &mut [Actor],
 		screen: &mut Screen,
 	) -> bool {
-		println!("moving to {},{}", (dir.0).0, (dir.0).1);
-		true
+		let (new_x, new_y) = (actors[id].x + (dir.0 * val), actors[id].y + (dir.1 * val));
+		if Map::is_blocked(map, new_x as usize, new_y as usize) {
+			actors[id].x = new_x;
+			actors[id].y = new_y;
+			println!("{} moved to {},{}", actors[id].name, new_x, new_y);
+			return true;
+		}
+		false
 	}
 }

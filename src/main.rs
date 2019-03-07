@@ -11,11 +11,77 @@ use dogeylvania::skills::{Skill, SkillTypes};
 use dogeylvania::tiles::*;
 use tcod::colors::{self, Color};
 use tcod::console::*;
-use tcod::input::{self, Event, Mouse};
+use tcod::input::{self, Event, Key, Mouse};
 use tcod::map::{FovAlgorithm, Map as FovMap};
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
+
+#[derive(PartialEq, Debug)]
+enum Actions {
+    ActionTook,
+    No,
+    Exit,
+}
+
+fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> Actions {
+    use tcod::input::KeyCode::*;
+    use Actions::*;
+    use SkillTypes::*;
+    match key {
+        Key { code: Escape, .. } => Exit,
+        Key { code: Up, .. } | Key { code: NumPad8, .. } => {
+            match Skill::use_skill(move_attack, 0, Direction::NORTH, 1, map, actors, screen) {
+                true => ActionTook,
+                false => No,
+            }
+        }
+        Key { code: Down, .. } | Key { code: NumPad2, .. } => {
+            match Skill::use_skill(move_attack, 0, Direction::SOUTH, 1, map, actors, screen) {
+                true => ActionTook,
+                false => No,
+            }
+        }
+        Key { code: Left, .. } | Key { code: NumPad4, .. } => {
+            match Skill::use_skill(move_attack, 0, Direction::WEST, 1, map, actors, screen) {
+                true => ActionTook,
+                false => No,
+            }
+        }
+        Key { code: Right, .. } | Key { code: NumPad6, .. } => {
+            match Skill::use_skill(move_attack, 0, Direction::EAST, 1, map, actors, screen) {
+                true => ActionTook,
+                false => No,
+            }
+        }
+        Key { code: NumPad9, .. } => {
+            match Skill::use_skill(move_attack, 0, Direction::NORTHEAST, 1, map, actors, screen) {
+                true => ActionTook,
+                false => No,
+            }
+        }
+        Key { code: NumPad7, .. } => {
+            match Skill::use_skill(move_attack, 0, Direction::NORTHWEST, 1, map, actors, screen) {
+                true => ActionTook,
+                false => No,
+            }
+        }
+        Key { code: NumPad3, .. } => {
+            match Skill::use_skill(move_attack, 0, Direction::SOUTHEAST, 1, map, actors, screen) {
+                true => ActionTook,
+                false => No,
+            }
+        }
+        Key { code: NumPad1, .. } => {
+            match Skill::use_skill(move_attack, 0, Direction::SOUTHWEST, 1, map, actors, screen) {
+                true => ActionTook,
+                false => No,
+            }
+        }
+
+        _ => No,
+    }
+}
 
 fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map) {
     for y in 0..map.height() {
@@ -34,6 +100,9 @@ fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map) {
                     .put_char(x as i32, y as i32, chara.0, BackgroundFlag::None);
             }
         }
+    }
+    for actor in actors {
+        actor.draw(screen);
     }
     blit(
         &mut screen.con,
@@ -70,14 +139,12 @@ fn main() {
     let mut player = Actor::new(
         5,
         5,
-        '@',
-        colors::LIGHT_BLUE,
+        1 as char,
+        colors::DARK_SKY,
         "Doge".to_string(),
         SkillTypes::hit,
     );
     player.skills.push(Skill::move_attack());
-    player.skills[0].use_skill(0, (Direction::SOUTH, 1), &map, &mut actors, &mut screen);
-    player.skills[0].use_skill(0, (Direction::SOUTH, 1), &map, &mut actors, &mut screen);
     actors.push(player);
 
     while !screen.root.window_closed() {
@@ -88,5 +155,21 @@ fn main() {
         }
         draw(&mut screen, &mut actors, &mut map);
         screen.root.flush();
+        for actor in &actors {
+            actor.clear(&mut screen);
+        }
+        let action = keys(key, &mut screen, &mut actors, &mut map);
+        if action == Actions::Exit {
+            break;
+        }
+
+        //Next turn
+        if action == Actions::ActionTook {
+            for a in 0..actors.len() {
+                for s in 0..actors[a].skills.len() {
+                    actors[a].skills[s].cool_down_left -= 1;
+                }
+            }
+        }
     }
 }

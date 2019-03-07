@@ -1,6 +1,7 @@
 pub mod actors {
 	use crate::dogemaths::*;
 	use crate::maps::*;
+	use crate::screens::Screen;
 	use crate::skills::*;
 	use tcod::colors::{self, Color};
 	use tcod::console::*;
@@ -37,13 +38,18 @@ pub mod actors {
 			}
 		}
 
-		pub fn move_by(id: usize, x: i32, y: i32, map: &Map, actors: &mut [Actor]) {
-			let (dx, dy) = (actors[id].y + x, actors[id].y + y);
+		pub fn draw(&self, screen: &mut Screen) {
+			screen.con.set_default_foreground(self.color);
+			screen
+				.con
+				.put_char(self.x, self.y, self.char, BackgroundFlag::None);
 		}
 
-		pub fn draw(&self, con: &mut Console) {
-			con.set_default_foreground(self.color);
-			con.put_char(self.x, self.y, self.char, BackgroundFlag::None);
+		pub fn clear(&self, screen: &mut Screen) {
+			screen.con.set_default_foreground(self.color);
+			screen
+				.con
+				.put_char(self.x, self.y, ' ', BackgroundFlag::None);
 		}
 	}
 }

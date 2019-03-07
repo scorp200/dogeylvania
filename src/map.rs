@@ -22,6 +22,10 @@ pub mod maps {
 			Map::new(width, height, map)
 		}
 
+		pub fn is_blocked(map: &Map, x: usize, y: usize) -> bool {
+			!map.get(x, y).block_move
+		}
+
 		pub fn width(&self) -> usize {
 			self._width
 		}
