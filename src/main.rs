@@ -4,9 +4,11 @@ extern crate tcod;
 
 use dogeylvania::actors::*;
 use dogeylvania::dogemaths::*;
-use dogeylvania::maps::*;
-use dogeylvania::tiles::*;
 use dogeylvania::generator;
+use dogeylvania::maps::*;
+use dogeylvania::screens::Screen;
+use dogeylvania::skills::{Skill, SkillTypes};
+use dogeylvania::tiles::*;
 use tcod::colors::{self, Color};
 use tcod::console::*;
 use tcod::input::{self, Event, Mouse};
@@ -14,12 +16,6 @@ use tcod::map::{FovAlgorithm, Map as FovMap};
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
-
-struct Screen {
-    root: Root,
-    con: Offscreen,
-    mouse: Mouse,
-}
 
 fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map) {
     for y in 0..map.height() {
@@ -61,8 +57,7 @@ fn main() {
         SCREEN_HEIGHT as usize - 10,
         Tile::gold(),
     );
-    //map.set(5, 5, Tile::empty());
-	generator::generate(&mut map);
+    generator::generate(&mut map);
     let mut screen = Screen {
         root: root,
         con: Offscreen::new(map.width() as i32, map.height() as i32),
@@ -72,7 +67,16 @@ fn main() {
     tcod::system::set_fps(20);
 
     let mut actors = vec![];
-    let mut player = Actor::new(5, 5, '@', colors::LIGHT_BLUE, "Doge".to_string());
+    let mut player = Actor::new(
+        5,
+        5,
+        '@',
+        colors::LIGHT_BLUE,
+        "Doge".to_string(),
+        SkillTypes::hit,
+    );
+    player.skills.push(Skill::move_attack());
+    player.skills[0].use_skill(0, (Direction::SOUTH, 1), &map, &mut actors, &mut screen);
     actors.push(player);
 
     while !screen.root.window_closed() {
