@@ -25,7 +25,7 @@ pub mod dogestuff {
 	}
 	#[derive(PartialEq, Debug)]
 	pub enum Actions {
-		ActionTook,
+		TookAction,
 		NoAction,
 		Exit,
 	}

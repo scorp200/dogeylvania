@@ -68,7 +68,7 @@ pub mod skills {
 							SkillTypes::hit => hit,
 						};
 						let used = on_use(id, other_id, dir, val, map, actors, screen);
-						if used == ActionTook {
+						if used == TookAction {
 							actors[id].skills[skill_id].cool_down_left =
 								actors[id].skills[skill_id].cool_down;
 						}
@@ -101,7 +101,7 @@ pub mod skills {
 					"{} trying to hit {}",
 					actors[id].name, actors[other_id].name
 				);
-				ActionTook
+				TookAction
 			}
 			None => NoAction,
 		}
@@ -152,7 +152,7 @@ pub mod skills {
 			actors[id].x = new_x;
 			actors[id].y = new_y;
 			println!("{} moved to {},{}", actors[id].name, new_x, new_y);
-			return ActionTook;
+			return TookAction;
 		}
 		NoAction
 	}

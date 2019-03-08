@@ -34,7 +34,7 @@ fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> A
         Key { code: NumPad7, .. } => Some(Direction::NORTHWEST),
         Key { code: NumPad3, .. } => Some(Direction::SOUTHEAST),
         Key { code: NumPad1, .. } => Some(Direction::SOUTHWEST),
-        Key { code: NumPad5, .. } => return ActionTook,
+        Key { code: NumPad5, .. } => return TookAction,
         _ => None,
     };
     match dir {
@@ -174,7 +174,7 @@ fn main() {
         }
 
         //Next turn
-        if action == Actions::ActionTook {
+        if action == Actions::TookAction {
             //ai
             for id in 0..actors.len() {
                 if actors[id].ai.is_some() {
