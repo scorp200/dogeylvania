@@ -35,13 +35,33 @@ pub mod generator {
 			}
 		}
 
-		//rectangle(map, 1, 1, map.width()-1, map.height()-1, Tile::empty);
+		createRoom(map, 20, 10, 10, 20);
 
-		// Room test.
-		//rectangle(map, 10, 10, 30, 20, Tile::wall);		// Wall.
-		//rectangle(map, 20, 10, 21, 11, Tile::empty);	// Door.
-		//rectangle(map, 11, 11, 29, 19, Tile::empty);	// Interior.
-		//rectangle(map, 15, 15, 18, 18, Tile::gold);		// Goooooold.
+	}
+
+	fn createRoom(map: &mut Map, x: usize, y: usize, w: usize, h: usize) {
+		rectangle(map, x, y, x+w, y+h, Tile::wall);
+		rectangle(map, x+1, y+1, x+w-1, y+h-1, Tile::empty);
+
+		// Left.
+		if (!map.get(x-1, y+h/2).block_move) {
+			rectangle(map, x, y+h/2, x+1, y+h/2+1, Tile::empty);
+		}
+
+		// Right.
+		if (!map.get(x+w, y+h/2).block_move) {
+			rectangle(map, x+w-1, y+h/2, x+w, y+h/2+1, Tile::empty);
+		}
+
+		// Top.
+		if (!map.get(x+w/2, y-1).block_move) {
+			rectangle(map, x+w/2, y, x+w/2+1, y+1, Tile::empty);
+		}
+
+		// Bottom.
+		if (!map.get(x+w/2, y+h).block_move) {
+			rectangle(map, x+w/2, y+h-1, x+w/2+1, y+h, Tile::empty);
+		}
 	}
 
 	pub fn findOpenSpace(map: &mut Map) -> (usize, usize) {
