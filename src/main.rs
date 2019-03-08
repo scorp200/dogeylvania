@@ -16,6 +16,9 @@ use tcod::map::{FovAlgorithm, Map as FovMap};
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
+const FOV_RADIUS: i32 = 5;
+const Fov_ALGO: FovAlgorithm = FovAlgorithm::Basic;
+const FOV_ENABLE: bool = true;
 
 fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> Actions {
     use tcod::input::KeyCode::*;
@@ -31,6 +34,7 @@ fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> A
         Key { code: NumPad7, .. } => Some(Direction::NORTHWEST),
         Key { code: NumPad3, .. } => Some(Direction::SOUTHEAST),
         Key { code: NumPad1, .. } => Some(Direction::SOUTHWEST),
+        Key { code: NumPad5, .. } => Some((0, 0)),
         _ => None,
     };
     match dir {
@@ -39,21 +43,54 @@ fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> A
     }
 }
 
-fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map) {
+fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute: bool) {
+    if fov_recompute {
+        screen
+            .fov_map
+            .compute_fov(actors[0].x, actors[0].y, FOV_RADIUS, true, Fov_ALGO);
+    }
+
     for y in 0..map.height() {
         for x in 0..map.width() {
-            let tile = &map.get(x, y);
-
-            if let Some(bg) = &tile.color.as_ref() {
-                screen
-                    .con
-                    .set_char_background(x as i32, y as i32, bg.1, BackgroundFlag::Set);
+            let visible = screen.fov_map.is_in_fov(x as i32, y as i32);
+            let tile = &mut map.get(x, y);
+            if visible {
+                tile.explored = true;
             }
-            if let Some(chara) = &tile.char.as_ref() {
-                screen.con.set_default_foreground(chara.1);
-                screen
-                    .con
-                    .put_char(x as i32, y as i32, chara.0, BackgroundFlag::None);
+            if tile.explored {
+                if let Some(bg) = &tile.color.as_ref() {
+                    screen.con.set_char_background(
+                        x as i32,
+                        y as i32,
+                        if visible { bg.1 } else { bg.0 },
+                        BackgroundFlag::Set,
+                    );
+                }
+                if let Some(chara) = &tile.char.as_ref() {
+                    screen.con.set_default_foreground(chara.1);
+                    screen
+                        .con
+                        .put_char(x as i32, y as i32, chara.0, BackgroundFlag::None);
+                }
+            }
+        }
+    }
+    if !FOV_ENABLE {
+        for y in 0..map.height() {
+            for x in 0..map.width() {
+                let tile = &map.get(x, y);
+
+                if let Some(bg) = &tile.color.as_ref() {
+                    screen
+                        .con
+                        .set_char_background(x as i32, y as i32, bg.1, BackgroundFlag::Set);
+                }
+                if let Some(chara) = &tile.char.as_ref() {
+                    screen.con.set_default_foreground(chara.1);
+                    screen
+                        .con
+                        .put_char(x as i32, y as i32, chara.0, BackgroundFlag::None);
+                }
             }
         }
     }
@@ -83,37 +120,46 @@ fn main() {
         Tile::gold(),
     );
     generator::generate(&mut map);
-    let mut screen = Screen {
-        root: root,
-        con: Offscreen::new(map.width() as i32, map.height() as i32),
-        mouse: Default::default(),
-    };
     let mut key = Default::default();
     tcod::system::set_fps(20);
 
     let mut actors = vec![];
-    let mut player = Actor::new(
-        5,
-        5,
-        1 as char,
-        colors::DARK_SKY,
-        "Doge".to_string(),
-        SkillTypes::hit,
-    );
+    let mut player = Actor::new(5, 5, 2 as char, colors::DARK_SKY, "Doge".to_string());
+    let mut prev_pos = (-1, -1);
     player.skills.push(Skill::move_attack());
     actors.push(player);
 
+    let mut fov_map = FovMap::new(map.width() as i32, map.height() as i32);
+    for y in 0..map.height() {
+        for x in 0..map.width() {
+            fov_map.set(
+                x as i32,
+                y as i32,
+                !map.get(x, y).block_light,
+                !map.get(x, y).block_move,
+            );
+        }
+    }
+    let mut screen = Screen {
+        root: root,
+        con: Offscreen::new(map.width() as i32, map.height() as i32),
+        fov_map: fov_map,
+        mouse: Default::default(),
+    };
+
     while !screen.root.window_closed() {
+        let mut fov_recompute = prev_pos != (actors[0].x, actors[0].y);
         match input::check_for_event(input::MOUSE | input::KEY_PRESS) {
             Some((_, Event::Mouse(m))) => screen.mouse = m,
             Some((_, Event::Key(k))) => key = k,
             _ => key = Default::default(),
         }
-        draw(&mut screen, &mut actors, &mut map);
+        draw(&mut screen, &mut actors, &mut map, fov_recompute);
         screen.root.flush();
         for actor in &actors {
             actor.clear(&mut screen);
         }
+        prev_pos = (actors[0].x, actors[0].y);
         let action = keys(key, &mut screen, &mut actors, &mut map);
         if action == Actions::Exit {
             break;

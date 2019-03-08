@@ -23,7 +23,7 @@ pub mod maps {
 		}
 
 		pub fn is_blocked(map: &Map, x: usize, y: usize) -> bool {
-			!map.get(x, y).block_move
+			!map._map[x][y].block_move
 		}
 
 		pub fn width(&self) -> usize {
@@ -34,8 +34,8 @@ pub mod maps {
 			self._height
 		}
 
-		pub fn get(&self, x: usize, y: usize) -> Tile {
-			self._map[clamp(x, 0, self._width - 1)][clamp(y, 0, self._height)]
+		pub fn get(&mut self, x: usize, y: usize) -> &mut Tile {
+			&mut self._map[clamp(x, 0, self._width - 1)][clamp(y, 0, self._height)]
 		}
 
 		pub fn set(&mut self, x: usize, y: usize, value: Tile) {
