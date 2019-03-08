@@ -21,6 +21,8 @@ pub mod dogestuff {
 		pub root: Root,
 		pub con: Offscreen,
 		pub fov_map: FovMap,
+		pub fov_enable: bool,
+		pub last_fov: bool,
 		pub mouse: Mouse,
 	}
 	#[derive(PartialEq, Debug)]

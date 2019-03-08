@@ -17,8 +17,7 @@ use tcod::map::{FovAlgorithm, Map as FovMap};
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
 const FOV_RADIUS: i32 = 10;
-const Fov_ALGO: FovAlgorithm = FovAlgorithm::Basic;
-const FOV_ENABLE: bool = true;
+const FOV_ALGO: FovAlgorithm = FovAlgorithm::Basic;
 
 fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> Actions {
     use tcod::input::KeyCode::*;
@@ -26,6 +25,10 @@ fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> A
     use SkillTypes::*;
     let dir = match key {
         Key { code: Escape, .. } => return Exit,
+        Key { code: Shift, .. } => {
+            screen.fov_enable = !screen.fov_enable;
+            return NoAction;
+        }
         Key { code: Up, .. } | Key { code: NumPad8, .. } => Some(Direction::NORTH),
         Key { code: Down, .. } | Key { code: NumPad2, .. } => Some(Direction::SOUTH),
         Key { code: Left, .. } | Key { code: NumPad4, .. } => Some(Direction::WEST),
@@ -47,7 +50,11 @@ fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute:
     if fov_recompute {
         screen
             .fov_map
-            .compute_fov(actors[0].x, actors[0].y, FOV_RADIUS, true, Fov_ALGO);
+            .compute_fov(actors[0].x, actors[0].y, FOV_RADIUS, true, FOV_ALGO);
+    }
+
+    if screen.last_fov != screen.fov_enable {
+        screen.con.clear();
     }
 
     for y in 0..map.height() {
@@ -75,7 +82,8 @@ fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute:
             }
         }
     }
-    if !FOV_ENABLE {
+    screen.last_fov = screen.fov_enable;
+    if !screen.fov_enable {
         for y in 0..map.height() {
             for x in 0..map.width() {
                 let tile = &map.get(x, y);
@@ -124,8 +132,15 @@ fn main() {
     tcod::system::set_fps(20);
 
     let mut actors = vec![];
-	let openSpace = generator::findOpenSpace(&mut map);
-    let mut player = Actor::new(openSpace.0 as i32, openSpace.1 as i32, 2 as char, colors::DARK_SKY, "Doge".to_string(), true);
+    let openSpace = generator::findOpenSpace(&mut map);
+    let mut player = Actor::new(
+        openSpace.0 as i32,
+        openSpace.1 as i32,
+        2 as char,
+        colors::DARK_SKY,
+        "Doge".to_string(),
+        true,
+    );
     let mut prev_pos = (-1, -1);
     player.skills.push(Skill::move_attack());
     player.skills.push(Skill::hit());
@@ -153,6 +168,8 @@ fn main() {
         root: root,
         con: Offscreen::new(map.width() as i32, map.height() as i32),
         fov_map: fov_map,
+        fov_enable: true,
+        last_fov: true,
         mouse: Default::default(),
     };
 
