@@ -145,7 +145,6 @@ pub mod skills {
 		actors: &mut [Actor],
 		screen: &mut Screen,
 	) -> Actions {
-		println!("moved...");
 		let (new_x, new_y) = (actors[id].x + (dir.0 * val), actors[id].y + (dir.1 * val));
 		if Actor::is_blocked(actors, new_x, new_y)
 			&& Map::is_blocked(map, new_x as usize, new_y as usize)
