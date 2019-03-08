@@ -124,7 +124,8 @@ fn main() {
     tcod::system::set_fps(20);
 
     let mut actors = vec![];
-    let mut player = Actor::new(5, 5, 2 as char, colors::DARK_SKY, "Doge".to_string(), true);
+	let openSpace = generator::findOpenSpace(&mut map);
+    let mut player = Actor::new(openSpace.0 as i32, openSpace.1 as i32, 2 as char, colors::DARK_SKY, "Doge".to_string(), true);
     let mut prev_pos = (-1, -1);
     player.skills.push(Skill::move_attack());
     player.skills.push(Skill::hit());
