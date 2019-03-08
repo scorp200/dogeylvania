@@ -16,7 +16,7 @@ use tcod::map::{FovAlgorithm, Map as FovMap};
 
 const SCREEN_WIDTH: i32 = 80;
 const SCREEN_HEIGHT: i32 = 50;
-const FOV_RADIUS: i32 = 5;
+const FOV_RADIUS: i32 = 10;
 const Fov_ALGO: FovAlgorithm = FovAlgorithm::Basic;
 const FOV_ENABLE: bool = true;
 
@@ -34,11 +34,11 @@ fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> A
         Key { code: NumPad7, .. } => Some(Direction::NORTHWEST),
         Key { code: NumPad3, .. } => Some(Direction::SOUTHEAST),
         Key { code: NumPad1, .. } => Some(Direction::SOUTHWEST),
-        Key { code: NumPad5, .. } => Some((0, 0)),
+        Key { code: NumPad5, .. } => return ActionTook,
         _ => None,
     };
     match dir {
-        Some(dir) => Skill::use_skill(move_attack, 0, dir, 1, map, actors, screen),
+        Some(dir) => Skill::use_skill(move_attack, 0, None, dir, 1, map, actors, screen),
         None => NoAction,
     }
 }
@@ -124,10 +124,18 @@ fn main() {
     tcod::system::set_fps(20);
 
     let mut actors = vec![];
-    let mut player = Actor::new(5, 5, 2 as char, colors::DARK_SKY, "Doge".to_string());
+    let mut player = Actor::new(5, 5, 2 as char, colors::DARK_SKY, "Doge".to_string(), true);
     let mut prev_pos = (-1, -1);
     player.skills.push(Skill::move_attack());
+    player.skills.push(Skill::hit());
     actors.push(player);
+
+    let mut spider = Actor::new(7, 7, 'X', colors::RED, "Tiny Spider".to_string(), true);
+    spider.skills.push(Skill::move_attack());
+    spider.skills.push(Skill::hit());
+    use dogeylvania::ais::Ai;
+    spider.ai = Some(Ai);
+    actors.push(spider);
 
     let mut fov_map = FovMap::new(map.width() as i32, map.height() as i32);
     for y in 0..map.height() {
@@ -148,7 +156,7 @@ fn main() {
     };
 
     while !screen.root.window_closed() {
-        let mut fov_recompute = prev_pos != (actors[0].x, actors[0].y);
+        let fov_recompute = prev_pos != (actors[0].x, actors[0].y);
         match input::check_for_event(input::MOUSE | input::KEY_PRESS) {
             Some((_, Event::Mouse(m))) => screen.mouse = m,
             Some((_, Event::Key(k))) => key = k,
@@ -167,9 +175,20 @@ fn main() {
 
         //Next turn
         if action == Actions::ActionTook {
+            //ai
+            for id in 0..actors.len() {
+                if actors[id].ai.is_some() {
+                    Ai::take_turn(id, &map, &mut actors, &mut screen);
+                }
+            }
+
+            //reduce cooldown
             for a in 0..actors.len() {
                 for s in 0..actors[a].skills.len() {
-                    actors[a].skills[s].cool_down_left -= 1;
+                    let cdl = actors[a].skills[s].cool_down_left;
+                    if cdl > 0 {
+                        actors[a].skills[s].cool_down_left = cdl - 1;
+                    }
                 }
             }
         }

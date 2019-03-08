@@ -1,5 +1,6 @@
 pub mod dogemaths {
 	use rand::Rng;
+
 	pub fn clamp<T: PartialOrd>(value: T, min: T, max: T) -> T {
 		if value < min {
 			min
@@ -48,6 +49,16 @@ pub mod dogemaths {
 		pub const NORTHWEST: (i32, i32) = (-1, -1);
 		pub const SOUTHEAST: (i32, i32) = (1, 1);
 		pub const SOUTHWEST: (i32, i32) = (-1, 1);
+	}
+
+	pub fn get_dir_towards(me: (f32, f32), target: (f32, f32)) -> (i32, i32) {
+		let dx = target.0 - me.0;
+		let dy = target.1 - me.1;
+		let dist = getDistance(me, target);
+		(
+			(dx as f32 / dist).round() as i32,
+			(dy as f32 / dist).round() as i32,
+		)
 	}
 
 	pub struct Rect {

@@ -29,9 +29,19 @@ pub mod skills {
 			}
 		}
 
+		pub fn hit() -> Self {
+			Skill {
+				name: String::from("Hit your opponent"),
+				cool_down: 1,
+				cool_down_left: 0,
+				skill: SkillTypes::hit,
+			}
+		}
+
 		pub fn use_skill(
 			skilltype: SkillTypes,
 			id: usize,
+			other_id: Option<usize>,
 			dir: (i32, i32),
 			val: i32,
 			map: &Map,
@@ -47,16 +57,17 @@ pub mod skills {
 					if actors[id].skills[skill_id].cool_down_left == 0 {
 						let on_use: fn(
 							usize,
+							Option<usize>,
 							(i32, i32),
 							i32,
 							&Map,
 							&mut [Actor],
 							&mut Screen,
 						) -> Actions = match actors[id].skills[skill_id].skill {
-							SkillTypes::move_attack => move_by,
-							SkillTypes::hit => move_attack,
+							SkillTypes::move_attack => move_attack,
+							SkillTypes::hit => hit,
 						};
-						let used = on_use(id, dir, val, map, actors, screen);
+						let used = on_use(id, other_id, dir, val, map, actors, screen);
 						if used == ActionTook {
 							actors[id].skills[skill_id].cool_down_left =
 								actors[id].skills[skill_id].cool_down;
@@ -77,17 +88,28 @@ pub mod skills {
 
 	pub fn hit(
 		id: usize,
-		dir: ((i32, i32), i32),
+		other_id: Option<usize>,
+		dir: (i32, i32),
+		val: i32,
 		map: &Map,
 		actors: &mut [Actor],
 		screen: &mut Screen,
 	) -> Actions {
-		println!("hitting someone...");
-		ActionTook
+		match other_id {
+			Some(other_id) => {
+				println!(
+					"{} trying to hit {}",
+					actors[id].name, actors[other_id].name
+				);
+				ActionTook
+			}
+			None => NoAction,
+		}
 	}
 
 	pub fn move_attack(
 		id: usize,
+		other_id: Option<usize>,
 		dir: (i32, i32),
 		val: i32,
 		map: &Map,
@@ -99,23 +121,35 @@ pub mod skills {
 			.iter()
 			.position(|actor| (actor.x, actor.y) == (new_x, new_y));
 		match target_id {
-			Some(target_id) => {
-				Skill::use_skill(actors[id].default_skill, id, dir, val, map, actors, screen)
-			}
-			None => move_by(id, dir, val, map, actors, screen),
+			Some(target_id) => Skill::use_skill(
+				actors[id].default_skill,
+				id,
+				Some(target_id),
+				dir,
+				val,
+				map,
+				actors,
+				screen,
+			),
+
+			None => move_by(id, None, dir, val, map, actors, screen),
 		}
 	}
 
 	pub fn move_by(
 		id: usize,
+		other_id: Option<usize>,
 		dir: (i32, i32),
 		val: i32,
 		map: &Map,
 		actors: &mut [Actor],
 		screen: &mut Screen,
 	) -> Actions {
+		println!("moved...");
 		let (new_x, new_y) = (actors[id].x + (dir.0 * val), actors[id].y + (dir.1 * val));
-		if Map::is_blocked(map, new_x as usize, new_y as usize) {
+		if Actor::is_blocked(actors, new_x, new_y)
+			&& Map::is_blocked(map, new_x as usize, new_y as usize)
+		{
 			actors[id].x = new_x;
 			actors[id].y = new_y;
 			println!("{} moved to {},{}", actors[id].name, new_x, new_y);

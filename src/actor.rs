@@ -1,9 +1,9 @@
 pub mod actors {
+	use crate::ais::Ai;
 	use crate::dogemaths::*;
 	use crate::dogestuff::Screen;
 	use crate::maps::*;
 	use crate::skills::*;
-	use crate::ais::Ai;
 	use tcod::colors::{self, Color};
 	use tcod::console::*;
 	use tcod::map::Map as FovMap;
@@ -17,11 +17,12 @@ pub mod actors {
 		pub name: String,
 		pub skills: Vec<Skill>,
 		pub default_skill: SkillTypes,
+		pub block_move: bool,
 		pub ai: Option<Ai>,
 	}
 
 	impl Actor {
-		pub fn new(x: i32, y: i32, char: char, color: Color, name: String) -> Self {
+		pub fn new(x: i32, y: i32, char: char, color: Color, name: String, block: bool) -> Self {
 			Actor {
 				x: x,
 				y: y,
@@ -30,6 +31,7 @@ pub mod actors {
 				name: name,
 				skills: Vec::default(),
 				default_skill: SkillTypes::hit,
+				block_move: block,
 				ai: None,
 			}
 		}
@@ -46,6 +48,12 @@ pub mod actors {
 			screen
 				.con
 				.put_char(self.x, self.y, ' ', BackgroundFlag::None);
+		}
+
+		pub fn is_blocked(actors: &mut [Actor], x: i32, y: i32) -> bool {
+			!actors
+				.iter()
+				.any(|actor| actor.block_move && actor.x == x && actor.y == y)
 		}
 	}
 }
