@@ -74,9 +74,9 @@ fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute:
                     );
                 }
                 if let Some(chara) = &tile.char.as_ref() {
-                    screen.con.set_default_foreground(
-						if visible { chara.2 } else { chara.1 }
-					);
+                    screen
+                        .con
+                        .set_default_foreground(if visible { chara.2 } else { chara.1 });
                     screen
                         .con
                         .put_char(x as i32, y as i32, chara.0, BackgroundFlag::None);
@@ -105,7 +105,9 @@ fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute:
         }
     }
     for actor in actors {
-        actor.draw(screen);
+        if screen.fov_map.is_in_fov(actor.x, actor.y) {
+            actor.draw(screen);
+        }
     }
     blit(
         &mut screen.con,
@@ -124,10 +126,7 @@ fn main() {
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Dogeylvania")
         .init();
-    let mut map = Map::new_default(
-        SCREEN_WIDTH as usize,
-        SCREEN_HEIGHT as usize - 10
-    );
+    let mut map = Map::new_default(SCREEN_WIDTH as usize, SCREEN_HEIGHT as usize - 10);
     generator::generate(&mut map);
     let mut key = Default::default();
     tcod::system::set_fps(20);
