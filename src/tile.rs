@@ -32,9 +32,9 @@ pub mod tiles {
 						b: 0,
 					},
 					Color {
-						r: 0,
-						g: 0,
-						b: 0,
+						r: 40,
+						g: 40,
+						b: 10,
 					},
 				)),
 				block_move: false,
@@ -45,17 +45,29 @@ pub mod tiles {
 
 		pub fn wall() -> Self {
 			Tile {
-				char: None,
-				color: Some((
+				char: Some((
+					'#',
 					Color {
-						r: 43,
-						g: 40,
-						b: 48,
+						r: 40,
+						g: 10,
+						b: 0,
 					},
 					Color {
-						r: 151,
-						g: 142,
-						b: 170,
+						r: 200,
+						g: 50,
+						b: 0,
+					}
+				)),
+				color: Some((
+					Color {
+						r: 0,
+						g: 0,
+						b: 0,
+					},
+					Color {
+						r: 20,
+						g: 20,
+						b: 5,
 					},
 				)),
 				block_move: true,
@@ -69,26 +81,26 @@ pub mod tiles {
 				char: Some((
 					'*',
 					Color {
-						r: 242,
-						g: 242,
-						b: 141,
+						r: 60,
+						g: 60,
+						b: 0,
 					},
 					Color {
-						r: 242,
-						g: 242,
-						b: 141,
+						r: 255,
+						g: 255,
+						b: 0,
 					}
 				)),
 				color: Some((
 					Color {
-						r: 43,
-						g: 40,
-						b: 48,
+						r: 0,
+						g: 0,
+						b: 0,
 					},
 					Color {
-						r: 151,
-						g: 142,
-						b: 170,
+						r: 20,
+						g: 20,
+						b: 5,
 					},
 				)),
 				block_move: true,
