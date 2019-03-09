@@ -1,3 +1,4 @@
+#![allow(non_snake_case)]
 extern crate dogeylvania;
 extern crate rand;
 extern crate tcod;
@@ -105,7 +106,7 @@ fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute:
         }
     }
     for actor in actors {
-        if screen.fov_map.is_in_fov(actor.x, actor.y) {
+        if screen.fov_map.is_in_fov(actor.x, actor.y) || !screen.fov_enable {
             actor.draw(screen);
         }
     }
