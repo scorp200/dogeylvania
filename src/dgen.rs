@@ -43,6 +43,9 @@ pub mod generator {
 				if _grid[x][y] > 0 {
 					rectangle(map, x-1, y-1, x+1, y+1, Tile::empty);
 				}
+				if _grid[x][y] > 5 {
+					rectangle(map, x-1, y-1, x+1, y+1, Tile::gold);
+				}
 			}
 		}
 

@@ -74,7 +74,9 @@ fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute:
                     );
                 }
                 if let Some(chara) = &tile.char.as_ref() {
-                    screen.con.set_default_foreground(chara.1);
+                    screen.con.set_default_foreground(
+						if visible { chara.2 } else { chara.1 }
+					);
                     screen
                         .con
                         .put_char(x as i32, y as i32, chara.0, BackgroundFlag::None);
