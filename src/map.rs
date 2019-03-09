@@ -17,9 +17,24 @@ pub mod maps {
 			}
 		}
 
-		pub fn new_default(width: usize, height: usize, default: Tile) -> Self {
-			let map = vec![vec![default; height]; width];
+		pub fn new_default(width: usize, height: usize) -> Self {
+
+			// Manual.
+			let mut map = Vec::new();
+			for x in 0..width {
+				let mut col = Vec::new();
+				for y in 0..height {
+					col.push(Tile::empty());
+				}
+				map.push(col);
+			}
+
+			// Functional, I beleive this is considered the "right way", but fuck is it difficult
+			// to read and understand at a glance. So I prefer the above.
+			//let mut map = (0..width).map(|_| (0..height).map(|_| default()).collect()).collect();
+
 			Map::new(width, height, map)
+
 		}
 
 		pub fn is_blocked(map: &Map, x: usize, y: usize) -> bool {

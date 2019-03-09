@@ -8,6 +8,9 @@ pub mod generator {
 
 	pub fn generate(map: &mut Map) {
 
+		// Clear map to base.
+		rectangle(map, 0, 0, map.width(), map.height(), Tile::wall);
+
 		// Create temporary grid.
 		let width = map.width();
 		let height = map.height();
@@ -19,7 +22,7 @@ pub mod generator {
 
 			_grid[x][y] += 1;
 			//map.set(x, y, Tile::empty());
-			rectangle(map, x-1, y-1, x+1, y+1, Tile::empty);
+			//rectangle(map, x-1, y-1, x+1, y+1, Tile::empty);
 
 			x += randomOffset();
 			y += randomOffset();
@@ -32,6 +35,14 @@ pub mod generator {
 			|| y > height-3 {
 				x = width / 2;
 				y = height / 2;
+			}
+		}
+
+		for x in 2..width-1 {
+			for y in 2..height-1 {
+				if _grid[x][y] > 0 {
+					rectangle(map, x-1, y-1, x+1, y+1, Tile::empty);
+				}
 			}
 		}
 

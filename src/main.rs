@@ -124,8 +124,7 @@ fn main() {
         .init();
     let mut map = Map::new_default(
         SCREEN_WIDTH as usize,
-        SCREEN_HEIGHT as usize - 10,
-        Tile::gold(),
+        SCREEN_HEIGHT as usize - 10
     );
     generator::generate(&mut map);
     let mut key = Default::default();

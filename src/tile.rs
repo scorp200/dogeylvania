@@ -1,6 +1,6 @@
 pub mod tiles {
 	use tcod::colors::{self, Color};
-	#[derive(Clone, Copy, PartialEq, Debug)]
+	//#[derive(Clone, Copy, PartialEq, Debug)]
 	pub struct Tile {
 		pub char: Option<(char, Color)>,
 		pub color: Option<(Color, Color)>,
