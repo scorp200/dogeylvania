@@ -147,12 +147,15 @@ fn main() {
     player.skills.push(Skill::hit());
     actors.push(player);
 
-    let mut spider = Actor::new(7, 7, 'X', colors::RED, "Tiny Spider".to_string(), true);
-    spider.skills.push(Skill::move_attack());
-    spider.skills.push(Skill::hit());
-    use dogeylvania::ais::Ai;
-    spider.ai = Some(Ai);
-    actors.push(spider);
+	use dogeylvania::ais::Ai;
+	for _ in 0..5 {
+		let emptyPos = generator::findOpenSpaceFrom(&mut map, openSpace.0, openSpace.1, 5.0);
+	    let mut spider = Actor::new(emptyPos.0 as i32, emptyPos.1 as i32, 'X', colors::RED, "Tiny Spider".to_string(), true);
+	    spider.skills.push(Skill::move_attack());
+	    spider.skills.push(Skill::hit());
+	    spider.ai = Some(Ai);
+	    actors.push(spider);
+	}
 
     let mut fov_map = FovMap::new(map.width() as i32, map.height() as i32);
     for y in 0..map.height() {

@@ -37,10 +37,10 @@ pub mod tiles {
 
 		pub fn tree() -> Self {
 			let mut rng = thread_rng();
-			let c = [5 as char, 6 as char, 24 as char, 30 as char];
+			let c: [u8; 4] = [5, 6, 24, 30];
 			Tile {
 				char: Some((
-					*c.choose(&mut rng).unwrap(),
+					*c.choose(&mut rng).unwrap() as char,
 					Color { r: 0, g: 20, b: 0 },
 					Color { r: 0, g: 100, b: 0 }
 				)),

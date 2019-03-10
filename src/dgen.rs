@@ -7,6 +7,7 @@ pub mod generator {
 	use rand::Rng;
 	use crate::maps::{Map};
 	use crate::tiles::{Tile};
+	use crate::dogemaths::*;
 
 	pub fn generate(map: &mut Map) {
 
@@ -57,7 +58,18 @@ pub mod generator {
 			}
 		}
 
-		createRoom(map, 20, 10, 10, 20);
+		// Try to place some rooms.
+		let mut rng = rand::thread_rng();
+		for _ in 0..10 {
+			let x = rng.gen_range(1, width-11);
+			let y = rng.gen_range(1, height-11);
+			if (_grid[x+5][y-1] > 0) as u8
+			+ (_grid[x-1][y+5] > 0) as u8
+			+ (_grid[x+11][y+5] > 0) as u8
+			+ (_grid[x+5][y+11] > 0) as u8 == 1 {
+				createRoom(map, x, y, 10, 10);
+			}
+		}
 
 	}
 
@@ -66,22 +78,22 @@ pub mod generator {
 		rectangle(map, x+1, y+1, x+w-1, y+h-1, Tile::floor);
 
 		// Left.
-		if (!map.get(x-1, y+h/2).block_move) {
+		if !map.get(x-1, y+h/2).block_move {
 			rectangle(map, x, y+h/2, x+1, y+h/2+1, Tile::floor);
 		}
 
 		// Right.
-		if (!map.get(x+w, y+h/2).block_move) {
+		if !map.get(x+w, y+h/2).block_move {
 			rectangle(map, x+w-1, y+h/2, x+w, y+h/2+1, Tile::floor);
 		}
 
 		// Top.
-		if (!map.get(x+w/2, y-1).block_move) {
+		if !map.get(x+w/2, y-1).block_move {
 			rectangle(map, x+w/2, y, x+w/2+1, y+1, Tile::floor);
 		}
 
 		// Bottom.
-		if (!map.get(x+w/2, y+h).block_move) {
+		if !map.get(x+w/2, y+h).block_move {
 			rectangle(map, x+w/2, y+h-1, x+w/2+1, y+h, Tile::floor);
 		}
 	}
@@ -98,6 +110,21 @@ pub mod generator {
 			if !map.get(x, y).block_move {
 				ox = x;
 				oy = y;
+			}
+		}
+		(ox, oy)
+	}
+
+	pub fn findOpenSpaceFrom(map: &mut Map, x: usize, y: usize, dist: f32) -> (usize, usize) {
+		let mut ox = 0;
+		let mut oy = 0;
+		let mut done = false;
+		while !done {
+			let space = findOpenSpace(map);
+			if getDistance((x as f32, y as f32), (space.0 as f32, space.1 as f32)) > dist {
+				ox = space.0;
+				oy = space.1;
+				done = true;
 			}
 		}
 		(ox, oy)
