@@ -9,10 +9,10 @@ use dogeylvania::dogestuff::{Actions, Screen};
 use dogeylvania::generator;
 use dogeylvania::maps::*;
 use dogeylvania::skills::{Skill, SkillTypes};
-use dogeylvania::tiles::*;
-use tcod::colors::{self, Color};
+//use dogeylvania::tiles::*;
+use tcod::colors::{self/*, Color*/};
 use tcod::console::*;
-use tcod::input::{self, Event, Key, Mouse};
+use tcod::input::{self, Event, Key/*, Mouse*/};
 use tcod::map::{FovAlgorithm, Map as FovMap};
 
 const SCREEN_WIDTH: i32 = 80;
@@ -122,7 +122,7 @@ fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute:
 }
 
 fn main() {
-    let mut root = Root::initializer()
+    let /*mut*/ root = Root::initializer()
         .font("Resources/terminal12x12_gs_ro.png", FontLayout::AsciiInRow)
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Dogeylvania")
