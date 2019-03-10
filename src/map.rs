@@ -19,7 +19,6 @@ pub mod maps {
 
 		pub fn new_default(width: usize, height: usize) -> Self {
 
-			// Manual.
 			let mut map = Vec::new();
 			for x in 0..width {
 				let mut col = Vec::new();
@@ -28,10 +27,6 @@ pub mod maps {
 				}
 				map.push(col);
 			}
-
-			// Functional, I beleive this is considered the "right way", but fuck is it difficult
-			// to read and understand at a glance. So I prefer the above.
-			//let mut map = (0..width).map(|_| (0..height).map(|_| default()).collect()).collect();
 
 			Map::new(width, height, map)
 

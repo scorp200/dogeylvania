@@ -2,6 +2,8 @@ pub mod generator {
 
 	extern crate rand;
 
+	use rand::thread_rng;
+	use rand::seq::SliceRandom;
 	use rand::Rng;
 	use crate::maps::{Map};
 	use crate::tiles::{Tile};
@@ -9,7 +11,7 @@ pub mod generator {
 	pub fn generate(map: &mut Map) {
 
 		// Clear map to base.
-		rectangle(map, 0, 0, map.width(), map.height(), Tile::wall);
+		rectangle(map, 0, 0, map.width(), map.height(), Tile::tree);
 
 		// Create temporary grid.
 		let width = map.width();
@@ -41,10 +43,16 @@ pub mod generator {
 		for x in 2..width-1 {
 			for y in 2..height-1 {
 				if _grid[x][y] > 0 {
-					rectangle(map, x-1, y-1, x+1, y+1, Tile::empty);
+					let chance = [(false, 20), (true, 1)];
+					let mut rng = thread_rng();
+					if chance.choose_weighted(&mut rng, |item| item.1).unwrap().0 {
+						rectangle(map, x-1, y-1, x+1, y+1, Tile::flower);
+					} else {
+						rectangle(map, x-1, y-1, x+1, y+1, Tile::empty);
+					}
 				}
-				if _grid[x][y] > 5 {
-					rectangle(map, x-1, y-1, x+1, y+1, Tile::gold);
+				if _grid[x][y] > 6 {
+					rectangle(map, x-1, y-1, x+1, y+1, Tile::tree);
 				}
 			}
 		}
@@ -55,26 +63,26 @@ pub mod generator {
 
 	fn createRoom(map: &mut Map, x: usize, y: usize, w: usize, h: usize) {
 		rectangle(map, x, y, x+w, y+h, Tile::wall);
-		rectangle(map, x+1, y+1, x+w-1, y+h-1, Tile::empty);
+		rectangle(map, x+1, y+1, x+w-1, y+h-1, Tile::floor);
 
 		// Left.
 		if (!map.get(x-1, y+h/2).block_move) {
-			rectangle(map, x, y+h/2, x+1, y+h/2+1, Tile::empty);
+			rectangle(map, x, y+h/2, x+1, y+h/2+1, Tile::floor);
 		}
 
 		// Right.
 		if (!map.get(x+w, y+h/2).block_move) {
-			rectangle(map, x+w-1, y+h/2, x+w, y+h/2+1, Tile::empty);
+			rectangle(map, x+w-1, y+h/2, x+w, y+h/2+1, Tile::floor);
 		}
 
 		// Top.
 		if (!map.get(x+w/2, y-1).block_move) {
-			rectangle(map, x+w/2, y, x+w/2+1, y+1, Tile::empty);
+			rectangle(map, x+w/2, y, x+w/2+1, y+1, Tile::floor);
 		}
 
 		// Bottom.
 		if (!map.get(x+w/2, y+h).block_move) {
-			rectangle(map, x+w/2, y+h-1, x+w/2+1, y+h, Tile::empty);
+			rectangle(map, x+w/2, y+h-1, x+w/2+1, y+h, Tile::floor);
 		}
 	}
 
