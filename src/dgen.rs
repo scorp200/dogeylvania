@@ -12,20 +12,19 @@ pub mod generator {
 	pub fn generate(map: &mut Map) {
 
 		// Clear map to base.
-		rectangle(map, 0, 0, map.width(), map.height(), Tile::tree);
-
-		// Create temporary grid.
 		let width = map.width();
 		let height = map.height();
-		println!("{} {}", width, height);
+		rectangle(map, 0, 0, width, height, Tile::tree);
+
+		// Create temporary grid.
 		let mut _grid = vec![vec![0; height]; width];
+
+		// Crawl the area.
 		let mut x = width / 2;
 		let mut y = height / 2;
 		for _ in 0..height*width {
 
 			_grid[x][y] += 1;
-			//map.set(x, y, Tile::empty());
-			//rectangle(map, x-1, y-1, x+1, y+1, Tile::empty);
 
 			x += random_offset();
 			y += random_offset();
@@ -41,9 +40,13 @@ pub mod generator {
 			}
 		}
 
+		// Dig out area and set values based on the above crawl.
 		for x in 2..width-1 {
 			for y in 2..height-1 {
-				if _grid[x][y] > 0 {
+				if _grid[x][y] > 6 {
+					rectangle(map, x-1, y-1, x+1, y+1, Tile::tree);
+				}
+				else if _grid[x][y] > 0 {
 					let chance = [(false, 20), (true, 1)];
 					let mut rng = thread_rng();
 					if chance.choose_weighted(&mut rng, |item| item.1).unwrap().0 {
@@ -51,9 +54,6 @@ pub mod generator {
 					} else {
 						rectangle(map, x-1, y-1, x+1, y+1, Tile::empty);
 					}
-				}
-				if _grid[x][y] > 6 {
-					rectangle(map, x-1, y-1, x+1, y+1, Tile::tree);
 				}
 			}
 		}
@@ -70,6 +70,10 @@ pub mod generator {
 				create_room(map, x, y, 10, 10);
 			}
 		}
+
+		// Place exit.
+		let pos = find_open_space(map);
+		map.set(pos.0, pos.1, Tile::exit());
 
 	}
 

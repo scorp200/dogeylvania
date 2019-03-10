@@ -116,5 +116,24 @@ pub mod tiles {
 				explored: false,
 			}
 		}
+
+		pub fn exit() -> Self {
+			let mut rng = thread_rng();
+			let c = [219 as char];
+			Tile {
+				char: Some((
+					*c.choose(&mut rng).unwrap(),
+					Color { r: 0, g: 50, b: 50 },
+					Color { r: 0, g: 255, b: 255 }
+				)),
+				color: Some((
+					Color { r: 0, g: 0, b: 0 },
+					Color { r: 40, g: 40, b: 10 }
+				)),
+				block_move: false,
+				block_light: false,
+				explored: false,
+			}
+		}
 	}
 }
