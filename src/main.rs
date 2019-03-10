@@ -127,7 +127,7 @@ fn main() {
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Dogeylvania")
         .init();
-    let mut map = Map::new_default(SCREEN_WIDTH as usize, SCREEN_HEIGHT as usize - 10);
+    let mut map = Map::new(SCREEN_WIDTH as usize, SCREEN_HEIGHT as usize - 10);
     generator::generate(&mut map);
     let mut key = Default::default();
     tcod::system::set_fps(20);

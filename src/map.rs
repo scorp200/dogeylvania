@@ -9,15 +9,7 @@ pub mod maps {
 	}
 
 	impl Map {
-		pub fn new(width: usize, height: usize, map: Vec<Vec<Tile>>) -> Self {
-			Map {
-				_width: width,
-				_height: height,
-				_map: map,
-			}
-		}
-
-		pub fn new_default(width: usize, height: usize) -> Self {
+		pub fn new(width: usize, height: usize) -> Self {
 
 			let mut map = Vec::new();
 			for _x in 0..width {
@@ -28,7 +20,11 @@ pub mod maps {
 				map.push(col);
 			}
 
-			Map::new(width, height, map)
+			Map {
+				_width: width,
+				_height: height,
+				_map: map,
+			}
 
 		}
 
