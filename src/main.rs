@@ -133,7 +133,7 @@ fn main() {
     tcod::system::set_fps(20);
 
     let mut actors = vec![];
-    let openSpace = generator::findOpenSpace(&mut map);
+    let openSpace = generator::find_open_space(&mut map);
     let mut player = Actor::new(
         openSpace.0 as i32,
         openSpace.1 as i32,
@@ -149,7 +149,7 @@ fn main() {
 
 	use dogeylvania::ais::Ai;
 	for _ in 0..5 {
-		let emptyPos = generator::findOpenSpaceFrom(&mut map, openSpace.0, openSpace.1, 5.0);
+		let emptyPos = generator::find_open_space_from(&mut map, openSpace.0, openSpace.1, 5.0);
 	    let mut spider = Actor::new(emptyPos.0 as i32, emptyPos.1 as i32, 'X', colors::RED, "Tiny Spider".to_string(), true);
 	    spider.skills.push(Skill::move_attack());
 	    spider.skills.push(Skill::hit());

@@ -27,8 +27,8 @@ pub mod generator {
 			//map.set(x, y, Tile::empty());
 			//rectangle(map, x-1, y-1, x+1, y+1, Tile::empty);
 
-			x += randomOffset();
-			y += randomOffset();
+			x += random_offset();
+			y += random_offset();
 			x -= 1;
 			y -= 1;
 
@@ -67,13 +67,13 @@ pub mod generator {
 			+ (_grid[x-1][y+5] > 0) as u8
 			+ (_grid[x+11][y+5] > 0) as u8
 			+ (_grid[x+5][y+11] > 0) as u8 == 1 {
-				createRoom(map, x, y, 10, 10);
+				create_room(map, x, y, 10, 10);
 			}
 		}
 
 	}
 
-	fn createRoom(map: &mut Map, x: usize, y: usize, w: usize, h: usize) {
+	fn create_room(map: &mut Map, x: usize, y: usize, w: usize, h: usize) {
 		rectangle(map, x, y, x+w, y+h, Tile::wall);
 		rectangle(map, x+1, y+1, x+w-1, y+h-1, Tile::floor);
 
@@ -98,7 +98,7 @@ pub mod generator {
 		}
 	}
 
-	pub fn findOpenSpace(map: &mut Map) -> (usize, usize) {
+	pub fn find_open_space(map: &mut Map) -> (usize, usize) {
 		let mut rng = rand::thread_rng();
 		let width = map.width();
 		let height = map.height();
@@ -115,19 +115,13 @@ pub mod generator {
 		(ox, oy)
 	}
 
-	pub fn findOpenSpaceFrom(map: &mut Map, x: usize, y: usize, dist: f32) -> (usize, usize) {
-		let mut ox = 0;
-		let mut oy = 0;
-		let mut done = false;
-		while !done {
-			let space = findOpenSpace(map);
+	pub fn find_open_space_from(map: &mut Map, x: usize, y: usize, dist: f32) -> (usize, usize) {
+		loop {
+			let space = find_open_space(map);
 			if getDistance((x as f32, y as f32), (space.0 as f32, space.1 as f32)) > dist {
-				ox = space.0;
-				oy = space.1;
-				done = true;
+				break space;
 			}
 		}
-		(ox, oy)
 	}
 
 	fn rectangle(map: &mut Map, x1: usize, y1: usize, x2: usize, y2: usize, t: fn() -> Tile) {
@@ -138,7 +132,7 @@ pub mod generator {
 		}
 	}
 
-	fn randomOffset() -> usize {
+	fn random_offset() -> usize {
 		let mut rng = rand::thread_rng();
 		rng.gen_range(0, 3)
 	}

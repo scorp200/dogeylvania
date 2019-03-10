@@ -1,7 +1,7 @@
 pub mod maps {
 	use crate::dogemaths::*;
 	use crate::tiles::*;
-	use tcod::colors::{self, Color};
+	//use tcod::colors::{self, Color};
 	pub struct Map {
 		_width: usize,
 		_height: usize,
@@ -20,9 +20,9 @@ pub mod maps {
 		pub fn new_default(width: usize, height: usize) -> Self {
 
 			let mut map = Vec::new();
-			for x in 0..width {
+			for _x in 0..width {
 				let mut col = Vec::new();
-				for y in 0..height {
+				for _y in 0..height {
 					col.push(Tile::empty());
 				}
 				map.push(col);
