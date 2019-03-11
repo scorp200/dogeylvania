@@ -131,7 +131,7 @@ pub mod skills {
 
 	fn gain_exp(id: usize, screen: &mut Screen, actors: &mut [Actor]) {
 		if let Some(stats) = &mut actors[id].stats.as_mut() {
-			stats.xp += 5;
+			stats.xp += 2;
 			if stats.xp >= 10 {
 				stats.xp = 0;
 				let hp = (rand::random::<f32>() * 2.).ceil() as i32;

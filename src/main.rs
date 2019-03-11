@@ -197,7 +197,7 @@ fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute:
 
 fn draw_ui(ui: &mut Ui, screen: &mut Screen, actors: &[Actor]) {
     if let Some(stats) = actors[0].stats.as_ref() {
-        ui.ui.set_default_foreground(colors::WHITE);
+        ui.ui.set_default_foreground(colors::DARK_SKY);
         ui.ui.print(
             1,
             1,
