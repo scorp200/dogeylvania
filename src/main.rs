@@ -196,7 +196,7 @@ fn main() {
         .title("Dogeylvania")
         .init();
     tcod::system::set_fps(20);
-    let mut map = Map::new_default(SCREEN_WIDTH as usize, SCREEN_HEIGHT as usize - 10);
+    let mut map = Map::new(SCREEN_WIDTH as usize, SCREEN_HEIGHT as usize - 10);
     generator::generate(&mut map);
     let mut actors = vec![];
     let openSpace = generator::find_open_space(&mut map);
