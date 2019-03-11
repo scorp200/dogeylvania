@@ -1,14 +1,10 @@
 pub mod actors {
 	use crate::ais::Ai;
-	use crate::dogemaths::*;
 	use crate::dogestuff::Screen;
-	use crate::maps::*;
 	use crate::skills::*;
 	use tcod::colors::{self, Color};
 	use tcod::console::*;
-	use tcod::map::Map as FovMap;
 
-	#[derive(PartialEq, Debug)]
 	pub struct Actor {
 		pub x: i32,
 		pub y: i32,
@@ -17,22 +13,62 @@ pub mod actors {
 		pub name: String,
 		pub skills: Vec<Skill>,
 		pub default_skill: SkillTypes,
+		pub alive: bool,
 		pub block_move: bool,
 		pub ai: Option<Ai>,
+		pub stats: Option<Stats>,
+	}
+
+	pub struct Stats {
+		pub hp: i32,
+		pub max_hp: i32,
+		pub atk: i32,
+		pub def: i32,
+		pub on_death: DeathCallBack,
+	}
+
+	pub enum DeathCallBack {
+		Player,
+		Monster,
+	}
+
+	fn player_death(actor: &mut Actor) {
+		println!("You died");
+		actor.char = '%';
+		actor.color = colors::DARK_RED;
+	}
+
+	fn monster_death(actor: &mut Actor) {
+		println!("{} has died", actor.name);
+		actor.char = '%';
+		actor.color = colors::DARK_RED;
+		actor.block_move = false;
+		actor.stats = None;
+		actor.ai = None;
 	}
 
 	impl Actor {
-		pub fn new(x: i32, y: i32, char: char, color: Color, name: String, block: bool) -> Self {
+		pub fn new(
+			x: i32,
+			y: i32,
+			char: char,
+			color: Color,
+			name: String,
+			alive: bool,
+			block: bool,
+		) -> Self {
 			Actor {
 				x: x,
 				y: y,
 				char: char,
 				color: color,
 				name: name,
+				alive: alive,
 				skills: Vec::default(),
 				default_skill: SkillTypes::hit,
 				block_move: block,
 				ai: None,
+				stats: None,
 			}
 		}
 
@@ -54,6 +90,27 @@ pub mod actors {
 			!actors
 				.iter()
 				.any(|actor| actor.block_move && actor.x == x && actor.y == y)
+		}
+
+		pub fn take_damage(&mut self, dmg: i32) {
+			if let Some(stats) = self.stats.as_mut() {
+				if dmg > 0 {
+					stats.hp -= dmg;
+					println!("{} has now {} hp.", self.name, stats.hp);
+				}
+
+				if stats.hp <= 0 {
+					self.alive = false;
+					match stats.on_death {
+						DeathCallBack::Player => {
+							player_death(self);
+						}
+						DeathCallBack::Monster => {
+							monster_death(self);
+						}
+					}
+				}
+			}
 		}
 	}
 }

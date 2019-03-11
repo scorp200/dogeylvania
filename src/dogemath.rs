@@ -1,5 +1,5 @@
 pub mod dogemaths {
-	use rand::Rng;
+	use rand;
 
 	pub fn clamp<T: PartialOrd>(value: T, min: T, max: T) -> T {
 		if value < min {

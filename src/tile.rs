@@ -2,7 +2,7 @@ pub mod tiles {
 
 	extern crate rand;
 
-	use tcod::colors::{self, Color};
+	use tcod::colors::Color;
 	use rand::thread_rng;
 	use rand::seq::SliceRandom;
 

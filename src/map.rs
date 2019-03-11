@@ -18,7 +18,6 @@ pub mod maps {
 		}
 
 		pub fn new_default(width: usize, height: usize) -> Self {
-
 			let mut map = Vec::new();
 			for _x in 0..width {
 				let mut col = Vec::new();
@@ -29,7 +28,14 @@ pub mod maps {
 			}
 
 			Map::new(width, height, map)
+		}
 
+		pub fn re_default(&mut self) {
+			for x in 0..self._width {
+				for y in 0..self._height {
+					self.set(x, y, Tile::empty());
+				}
+			}
 		}
 
 		pub fn is_blocked(map: &Map, x: usize, y: usize) -> bool {

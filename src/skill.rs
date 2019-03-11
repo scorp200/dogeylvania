@@ -1,7 +1,6 @@
 pub mod skills {
 	use crate::actors::*;
-	use crate::dogemaths::Direction;
-	use crate::dogestuff::{Actions, Screen};
+	use crate::dogestuff::{mut_two, Actions, Screen};
 	use crate::maps::*;
 	use Actions::*;
 
@@ -86,7 +85,7 @@ pub mod skills {
 		}
 	}
 
-	pub fn hit(
+	fn hit(
 		id: usize,
 		other_id: Option<usize>,
 		dir: (i32, i32),
@@ -97,17 +96,31 @@ pub mod skills {
 	) -> Actions {
 		match other_id {
 			Some(other_id) => {
+				let atk;
+				let def;
+				if let Some(stats) = &actors[id].stats.as_ref() {
+					atk = stats.atk;
+				} else {
+					atk = 0;
+				}
+				if let Some(stats) = &actors[other_id].stats.as_ref() {
+					def = stats.def;
+				} else {
+					def = 0;
+				}
+				let dmg = atk - def;
 				println!(
-					"{} trying to hit {}",
-					actors[id].name, actors[other_id].name
+					"{} hit {} for {} damage.",
+					actors[id].name, actors[other_id].name, dmg
 				);
+				actors[other_id].take_damage(dmg);
 				TookAction
 			}
 			None => NoAction,
 		}
 	}
 
-	pub fn move_attack(
+	fn move_attack(
 		id: usize,
 		other_id: Option<usize>,
 		dir: (i32, i32),
@@ -121,22 +134,28 @@ pub mod skills {
 			.iter()
 			.position(|actor| (actor.x, actor.y) == (new_x, new_y));
 		match target_id {
-			Some(target_id) => Skill::use_skill(
-				actors[id].default_skill,
-				id,
-				Some(target_id),
-				dir,
-				val,
-				map,
-				actors,
-				screen,
-			),
+			Some(target_id) => {
+				if actors[target_id].alive {
+					Skill::use_skill(
+						actors[id].default_skill,
+						id,
+						Some(target_id),
+						dir,
+						val,
+						map,
+						actors,
+						screen,
+					)
+				} else {
+					move_by(id, None, dir, val, map, actors, screen)
+				}
+			}
 
 			None => move_by(id, None, dir, val, map, actors, screen),
 		}
 	}
 
-	pub fn move_by(
+	fn move_by(
 		id: usize,
 		other_id: Option<usize>,
 		dir: (i32, i32),

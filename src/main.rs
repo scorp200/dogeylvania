@@ -9,10 +9,8 @@ use dogeylvania::dogestuff::{Actions, Screen};
 use dogeylvania::generator;
 use dogeylvania::maps::*;
 use dogeylvania::skills::{Skill, SkillTypes};
-//use dogeylvania::tiles::*;
-use tcod::colors::{self/*, Color*/};
+use tcod::colors;
 use tcod::console::*;
-use tcod::input::{self, Event, Key/*, Mouse*/};
 use tcod::map::{FovAlgorithm, Map as FovMap};
 
 const SCREEN_WIDTH: i32 = 80;
@@ -20,10 +18,14 @@ const SCREEN_HEIGHT: i32 = 50;
 const FOV_RADIUS: i32 = 10;
 const FOV_ALGO: FovAlgorithm = FovAlgorithm::Basic;
 
-fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> Actions {
+fn keys(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) -> Actions {
+    use tcod::input::Key;
     use tcod::input::KeyCode::*;
     use Actions::*;
     use SkillTypes::*;
+
+    let key = screen.root.wait_for_keypress(true);
+
     let dir = match key {
         Key { code: Escape, .. } => return Exit,
         Key { code: Shift, .. } => {
@@ -39,12 +41,78 @@ fn keys(key: Key, screen: &mut Screen, actors: &mut [Actor], map: &mut Map) -> A
         Key { code: NumPad3, .. } => Some(Direction::SOUTHEAST),
         Key { code: NumPad1, .. } => Some(Direction::SOUTHWEST),
         Key { code: NumPad5, .. } => return TookAction,
+        Key { printable: 'r', .. } => {
+            restart(screen, actors, map);
+            return NoAction;
+        }
         _ => None,
     };
     match dir {
         Some(dir) => Skill::use_skill(move_attack, 0, None, dir, 1, map, actors, screen),
         None => NoAction,
     }
+}
+
+fn restart(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) {
+    map.re_default();
+    generator::generate(map);
+    actors.truncate(0);
+    let openSpace = generator::find_open_space(map);
+    let mut player = Actor::new(
+        openSpace.0 as i32,
+        openSpace.1 as i32,
+        2 as char,
+        colors::DARK_SKY,
+        "Doge".to_string(),
+        true,
+        true,
+    );
+    player.stats = Some(Stats {
+        hp: 20,
+        max_hp: 20,
+        atk: 10,
+        def: 3,
+        on_death: DeathCallBack::Player,
+    });
+    player.skills.push(Skill::move_attack());
+    player.skills.push(Skill::hit());
+    actors.push(player);
+
+    use dogeylvania::ais::Ai;
+    for _ in 0..5 {
+        let emptyPos = generator::find_open_space_from(map, openSpace.0, openSpace.1, 5.0);
+        let mut spider = Actor::new(
+            emptyPos.0 as i32,
+            emptyPos.1 as i32,
+            'X',
+            colors::RED,
+            "Tiny Spider".to_string(),
+            true,
+            true,
+        );
+        spider.skills.push(Skill::move_attack());
+        spider.skills.push(Skill::hit());
+        spider.ai = Some(Ai);
+        spider.stats = Some(Stats {
+            hp: 10,
+            max_hp: 10,
+            atk: 4,
+            def: 1,
+            on_death: DeathCallBack::Monster,
+        });
+        actors.push(spider);
+    }
+    for y in 0..map.height() {
+        for x in 0..map.width() {
+            screen.fov_map.set(
+                x as i32,
+                y as i32,
+                !map.get(x, y).block_light,
+                !map.get(x, y).block_move,
+            );
+        }
+    }
+    screen.con.clear();
 }
 
 fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute: bool) {
@@ -127,11 +195,9 @@ fn main() {
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Dogeylvania")
         .init();
+    tcod::system::set_fps(20);
     let mut map = Map::new_default(SCREEN_WIDTH as usize, SCREEN_HEIGHT as usize - 10);
     generator::generate(&mut map);
-    let mut key = Default::default();
-    tcod::system::set_fps(20);
-
     let mut actors = vec![];
     let openSpace = generator::find_open_space(&mut map);
     let mut player = Actor::new(
@@ -141,21 +207,45 @@ fn main() {
         colors::DARK_SKY,
         "Doge".to_string(),
         true,
+        true,
     );
+    player.stats = Some(Stats {
+        hp: 20,
+        max_hp: 20,
+        atk: 10,
+        def: 3,
+        on_death: DeathCallBack::Player,
+    });
+
     let mut prev_pos = (-1, -1);
     player.skills.push(Skill::move_attack());
     player.skills.push(Skill::hit());
     actors.push(player);
 
-	use dogeylvania::ais::Ai;
-	for _ in 0..5 {
-		let emptyPos = generator::find_open_space_from(&mut map, openSpace.0, openSpace.1, 5.0);
-	    let mut spider = Actor::new(emptyPos.0 as i32, emptyPos.1 as i32, 'X', colors::RED, "Tiny Spider".to_string(), true);
-	    spider.skills.push(Skill::move_attack());
-	    spider.skills.push(Skill::hit());
-	    spider.ai = Some(Ai);
-	    actors.push(spider);
-	}
+    use dogeylvania::ais::Ai;
+    for _ in 0..5 {
+        let emptyPos = generator::find_open_space_from(&mut map, openSpace.0, openSpace.1, 5.0);
+        let mut spider = Actor::new(
+            emptyPos.0 as i32,
+            emptyPos.1 as i32,
+            'X',
+            colors::RED,
+            "Tiny Spider".to_string(),
+            true,
+            true,
+        );
+        spider.skills.push(Skill::move_attack());
+        spider.skills.push(Skill::hit());
+        spider.ai = Some(Ai);
+        spider.stats = Some(Stats {
+            hp: 10,
+            max_hp: 10,
+            atk: 4,
+            def: 1,
+            on_death: DeathCallBack::Monster,
+        });
+        actors.push(spider);
+    }
 
     let mut fov_map = FovMap::new(map.width() as i32, map.height() as i32);
     for y in 0..map.height() {
@@ -179,18 +269,13 @@ fn main() {
 
     while !screen.root.window_closed() {
         let fov_recompute = prev_pos != (actors[0].x, actors[0].y);
-        match input::check_for_event(input::MOUSE | input::KEY_PRESS) {
-            Some((_, Event::Mouse(m))) => screen.mouse = m,
-            Some((_, Event::Key(k))) => key = k,
-            _ => key = Default::default(),
-        }
         draw(&mut screen, &mut actors, &mut map, fov_recompute);
         screen.root.flush();
         for actor in &actors {
             actor.clear(&mut screen);
         }
         prev_pos = (actors[0].x, actors[0].y);
-        let action = keys(key, &mut screen, &mut actors, &mut map);
+        let action = keys(&mut screen, &mut actors, &mut map);
         if action == Actions::Exit {
             break;
         }
