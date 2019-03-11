@@ -1,5 +1,6 @@
 pub mod skills {
 	use crate::actors::*;
+	use crate::dogemaths::clamp;
 	use crate::dogestuff::{mut_two, Actions, Screen};
 	use crate::maps::*;
 	use tcod::colors::{self, Color};
@@ -112,7 +113,7 @@ pub mod skills {
 				} else {
 					def = 0;
 				}
-				let dmg = atk - def;
+				let dmg = clamp(atk - def, 0, (atk - def).abs());
 				screen.messages.add_message(
 					format!(
 						"{} hit {} for {} damage.",
@@ -134,7 +135,7 @@ pub mod skills {
 			stats.xp += 2;
 			if stats.xp >= 10 {
 				stats.xp = 0;
-				let hp = (rand::random::<f32>() * 2.).ceil() as i32;
+				let hp = (rand::random::<f32>() * 3.).ceil() as i32;
 				let atk = (rand::random::<f32>() * 2.).ceil() as i32;
 				let def = (rand::random::<f32>() * 2.).ceil() as i32;
 				stats.max_hp += hp;

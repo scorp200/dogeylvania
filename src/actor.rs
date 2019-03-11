@@ -36,7 +36,10 @@ pub mod actors {
 	fn player_death(actor: &mut Actor, screen: &mut Screen) {
 		screen
 			.messages
-			.add_message(format!("You died\nPress R to restart."), colors::RED);
+			.add_message(format!("{} died", actor.name), colors::CRIMSON);
+		screen
+			.messages
+			.add_message(format!("Press R to restart."), colors::CRIMSON);
 		actor.char = '%';
 		actor.color = colors::DARK_RED;
 	}

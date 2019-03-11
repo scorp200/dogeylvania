@@ -46,7 +46,11 @@ fn keys(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) -> Actions 
         (Key { code: NumPad1, .. }, true) => Some(Direction::SOUTHWEST),
         (Key { code: NumPad5, .. }, true) => return TookAction,
         (Key { printable: 'r', .. }, _) => {
-            restart(screen, actors, map);
+            new_map(screen, actors, map, true);
+            return NoAction;
+        }
+        (Key { printable: 'n', .. }, _) => {
+            new_map(screen, actors, map, false);
             return NoAction;
         }
         _ => None,
@@ -57,31 +61,41 @@ fn keys(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) -> Actions 
     }
 }
 
-fn restart(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) {
+fn new_map(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map, restart: bool) {
     map.re_default();
     generator::generate(map);
-    actors.truncate(0);
     let openSpace = generator::find_open_space(map);
-    let mut player = Actor::new(
-        openSpace.0 as i32,
-        openSpace.1 as i32,
-        2 as char,
-        colors::DARK_SKY,
-        "Doge".to_string(),
-        true,
-        true,
-    );
-    player.stats = Some(Stats {
-        hp: 20,
-        max_hp: 20,
-        atk: 10,
-        def: 3,
-        xp: 0,
-        on_death: DeathCallBack::Player,
-    });
-    player.skills.push(Skill::move_attack());
-    player.skills.push(Skill::hit());
-    actors.push(player);
+    if restart {
+        actors.truncate(0);
+        let mut player = Actor::new(
+            openSpace.0 as i32,
+            openSpace.1 as i32,
+            2 as char,
+            colors::DARK_SKY,
+            "Doge".to_string(),
+            true,
+            true,
+        );
+        player.stats = Some(Stats {
+            hp: 20,
+            max_hp: 20,
+            atk: 10,
+            def: 3,
+            xp: 0,
+            on_death: DeathCallBack::Player,
+        });
+        player.skills.push(Skill::move_attack());
+        player.skills.push(Skill::hit());
+        actors.push(player);
+    } else {
+        actors.drain(1..actors.len());
+        actors[0].x = openSpace.0 as i32;
+        actors[0].y = openSpace.1 as i32;
+        if let Some(stats) = &mut actors[0].stats {
+            stats.hp = stats.max_hp;
+        }
+        map.set_floor(map.get_floor() + 1);
+    }
 
     use dogeylvania::ais::Ai;
     for _ in 0..5 {
@@ -98,11 +112,12 @@ fn restart(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) {
         spider.skills.push(Skill::move_attack());
         spider.skills.push(Skill::hit());
         spider.ai = Some(Ai);
+        let mult = 2 * map.get_floor();
         spider.stats = Some(Stats {
-            hp: 10,
-            max_hp: 10,
-            atk: 4,
-            def: 1,
+            hp: 10 + (rand::random::<f32>() * mult as f32).ceil() as i32,
+            max_hp: 10 + (rand::random::<f32>() * mult as f32).ceil() as i32,
+            atk: 4 + (rand::random::<f32>() * mult as f32).ceil() as i32,
+            def: 1 + (rand::random::<f32>() * mult as f32).ceil() as i32,
             xp: 0,
             on_death: DeathCallBack::Monster,
         });
@@ -119,6 +134,32 @@ fn restart(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) {
         }
     }
     screen.con.clear();
+    if restart {
+        map.set_floor(1);
+        let color = colors::LIGHTER_SEPIA;
+        screen
+            .messages
+            .add_message(format!("Welcome to Dogeylvania!"), colors::LIGHTER_LIME);
+        screen
+            .messages
+            .add_message(format!("Your task is to climb the abyss"), color);
+        screen.messages.add_message(
+            format!("Find the blue door to proceed to next floor"),
+            color,
+        );
+        screen.messages.add_message(
+            format!("When you enter a new floor you will heal, but..."),
+            color,
+        );
+        screen
+            .messages
+            .add_message(format!("Each floor the enemies will get stronger!"), color);
+    } else {
+        screen.messages.add_message(
+            format!("You reached floor {}", map.get_floor()),
+            colors::LIGHTER_FUCHSIA,
+        );
+    }
 }
 
 fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute: bool) {
@@ -223,7 +264,7 @@ fn draw_ui(ui: &mut Ui, screen: &mut Screen, actors: &[Actor]) {
     for y in 0..screen.messages.msg.len() {
         let msg = &screen.messages.msg[y];
         ui.msg.set_default_foreground(msg.1);
-        ui.msg.print(1, 1 + y as i32, &msg.0);
+        ui.msg.print(1, 16 - (1 + y) as i32, &msg.0);
     }
 
     let height = ui.msg.height();
@@ -263,7 +304,7 @@ fn main() {
         messages: MSG { msg: Vec::new() },
     };
 
-    restart(&mut screen, &mut actors, &mut map);
+    new_map(&mut screen, &mut actors, &mut map, true);
 
     while !screen.root.window_closed() {
         let fov_recompute = prev_pos != (actors[0].x, actors[0].y);
@@ -297,6 +338,14 @@ fn main() {
                     }
                 }
             }
+        }
+        use dogeylvania::tiles::Tile;
+        if map
+            .get(actors[0].x as usize, actors[0].y as usize)
+            .exit
+            .is_some()
+        {
+            new_map(&mut screen, &mut actors, &mut map, false);
         }
     }
 }

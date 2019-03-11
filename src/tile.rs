@@ -13,6 +13,7 @@ pub mod tiles {
 		pub block_move: bool,
 		pub block_light: bool,
 		pub explored: bool,
+		pub exit: Option<bool>,
 	}
 
 	impl Tile {
@@ -32,6 +33,7 @@ pub mod tiles {
 				block_move: false,
 				block_light: false,
 				explored: false,
+				exit:None,
 			}
 		}
 
@@ -51,6 +53,7 @@ pub mod tiles {
 				block_move: true,
 				block_light: true,
 				explored: false,
+				exit:None,
 			}
 		}
 
@@ -70,6 +73,7 @@ pub mod tiles {
 				block_move: true,
 				block_light: true,
 				explored: false,
+				exit:None,
 			}
 		}
 
@@ -89,6 +93,7 @@ pub mod tiles {
 				block_move: false,
 				block_light: false,
 				explored: false,
+				exit:None,
 			}
 		}
 
@@ -114,6 +119,7 @@ pub mod tiles {
 				block_move: false,
 				block_light: false,
 				explored: false,
+				exit:None,
 			}
 		}
 
@@ -133,6 +139,7 @@ pub mod tiles {
 				block_move: false,
 				block_light: false,
 				explored: false,
+				exit:Some(true),
 			}
 		}
 	}
