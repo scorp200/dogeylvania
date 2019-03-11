@@ -28,10 +28,11 @@ fn keys(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) -> Actions 
 
     let dir = match (key, actors[0].alive) {
         (Key { code: Escape, .. }, _) => return Exit,
-        (Key { code: Shift, .. }, _) => {
+        //Reveals the map
+        /*(Key { code: Shift, .. }, _) => {
             screen.fov_enable = !screen.fov_enable;
             return NoAction;
-        }
+        }*/
         (Key { code: Up, .. }, true) | (Key { code: NumPad8, .. }, true) => Some(Direction::NORTH),
         (Key { code: Down, .. }, true) | (Key { code: NumPad2, .. }, true) => {
             Some(Direction::SOUTH)
@@ -49,10 +50,11 @@ fn keys(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) -> Actions 
             new_map(screen, actors, map, true);
             return NoAction;
         }
-        (Key { printable: 'n', .. }, _) => {
+        //Skip to next floor
+        /*(Key { printable: 'n', .. }, _) => {
             new_map(screen, actors, map, false);
             return NoAction;
-        }
+        }*/
         _ => None,
     };
     match dir {
