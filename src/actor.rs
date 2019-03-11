@@ -78,6 +78,52 @@ pub mod actors {
 			}
 		}
 
+		pub fn new_spider(x: i32, y: i32) -> Self {
+			let mut mob = Actor::new(
+				x,
+				y,
+				'X',
+				colors::RED,
+				"Tiny Spider".to_string(),
+				true,
+				true,
+			);
+			mob.skills.push(Skill::move_attack());
+			mob.skills.push(Skill::hit());
+			mob
+		}
+
+		pub fn new_wolf(x: i32, y: i32) -> Self {
+			let mut mob = Actor::new(
+				x,
+				y,
+				'W',
+				colors::LIGHT_GREY,
+				"Fluffy Wolf".to_string(),
+				true,
+				true,
+			);
+			mob.skills.push(Skill::move_attack());
+			mob.skills.push(Skill::hit());
+			mob
+		}
+
+		pub fn new_snake(x: i32, y: i32) -> Self {
+			let mut mob = Actor::new(
+				x,
+				y,
+				'Z',
+				colors::GREEN,
+				"Snek".to_string(),
+				true,
+				true,
+			);
+			mob.skills.push(Skill::move_attack());
+			mob.skills.push(Skill::hit());
+			mob
+		}
+
+
 		pub fn draw(&self, screen: &mut Screen) {
 			screen.con.set_default_foreground(self.color);
 			screen

@@ -62,6 +62,7 @@ fn keys(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) -> Actions 
 }
 
 fn new_map(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map, restart: bool) {
+    use rand::Rng;
     map.re_default();
     generator::generate(map);
     let openSpace = generator::find_open_space(map);
@@ -100,20 +101,15 @@ fn new_map(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map, restart:
     use dogeylvania::ais::Ai;
     for _ in 0..5 {
         let emptyPos = generator::find_open_space_from(map, openSpace.0, openSpace.1, 5.0);
-        let mut spider = Actor::new(
-            emptyPos.0 as i32,
-            emptyPos.1 as i32,
-            'X',
-            colors::RED,
-            "Tiny Spider".to_string(),
-            true,
-            true,
-        );
-        spider.skills.push(Skill::move_attack());
-        spider.skills.push(Skill::hit());
-        spider.ai = Some(Ai);
+        let mut mob = match rand::thread_rng().gen_range(0, 3) {
+            0 => Actor::new_spider(emptyPos.0 as i32, emptyPos.1 as i32),
+            1 => Actor::new_wolf(emptyPos.0 as i32, emptyPos.1 as i32),
+            2 => Actor::new_snake(emptyPos.0 as i32, emptyPos.1 as i32),
+            _ => Actor::new_spider(emptyPos.0 as i32, emptyPos.1 as i32),
+        };
         let mult = 2 * map.get_floor();
-        spider.stats = Some(Stats {
+        mob.ai = Some(Ai);
+        mob.stats = Some(Stats {
             hp: 10 + (rand::random::<f32>() * mult as f32).ceil() as i32,
             max_hp: 10 + (rand::random::<f32>() * mult as f32).ceil() as i32,
             atk: 4 + (rand::random::<f32>() * mult as f32).ceil() as i32,
@@ -121,7 +117,7 @@ fn new_map(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map, restart:
             xp: 0,
             on_death: DeathCallBack::Monster,
         });
-        actors.push(spider);
+        actors.push(mob);
     }
     for y in 0..map.height() {
         for x in 0..map.width() {
