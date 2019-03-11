@@ -5,7 +5,7 @@ extern crate tcod;
 
 use dogeylvania::actors::*;
 use dogeylvania::dogemaths::*;
-use dogeylvania::dogestuff::{Actions, Screen};
+use dogeylvania::dogestuff::{Actions, Screen, Ui, MSG};
 use dogeylvania::generator;
 use dogeylvania::maps::*;
 use dogeylvania::skills::{Skill, SkillTypes};
@@ -14,7 +14,7 @@ use tcod::console::*;
 use tcod::map::{FovAlgorithm, Map as FovMap};
 
 const SCREEN_WIDTH: i32 = 80;
-const SCREEN_HEIGHT: i32 = 50;
+const SCREEN_HEIGHT: i32 = 60;
 const FOV_RADIUS: i32 = 10;
 const FOV_ALGO: FovAlgorithm = FovAlgorithm::Basic;
 
@@ -26,22 +26,26 @@ fn keys(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) -> Actions 
 
     let key = screen.root.wait_for_keypress(true);
 
-    let dir = match key {
-        Key { code: Escape, .. } => return Exit,
-        Key { code: Shift, .. } => {
+    let dir = match (key, actors[0].alive) {
+        (Key { code: Escape, .. }, _) => return Exit,
+        (Key { code: Shift, .. }, _) => {
             screen.fov_enable = !screen.fov_enable;
             return NoAction;
         }
-        Key { code: Up, .. } | Key { code: NumPad8, .. } => Some(Direction::NORTH),
-        Key { code: Down, .. } | Key { code: NumPad2, .. } => Some(Direction::SOUTH),
-        Key { code: Left, .. } | Key { code: NumPad4, .. } => Some(Direction::WEST),
-        Key { code: Right, .. } | Key { code: NumPad6, .. } => Some(Direction::EAST),
-        Key { code: NumPad9, .. } => Some(Direction::NORTHEAST),
-        Key { code: NumPad7, .. } => Some(Direction::NORTHWEST),
-        Key { code: NumPad3, .. } => Some(Direction::SOUTHEAST),
-        Key { code: NumPad1, .. } => Some(Direction::SOUTHWEST),
-        Key { code: NumPad5, .. } => return TookAction,
-        Key { printable: 'r', .. } => {
+        (Key { code: Up, .. }, true) | (Key { code: NumPad8, .. }, true) => Some(Direction::NORTH),
+        (Key { code: Down, .. }, true) | (Key { code: NumPad2, .. }, true) => {
+            Some(Direction::SOUTH)
+        }
+        (Key { code: Left, .. }, true) | (Key { code: NumPad4, .. }, true) => Some(Direction::WEST),
+        (Key { code: Right, .. }, true) | (Key { code: NumPad6, .. }, true) => {
+            Some(Direction::EAST)
+        }
+        (Key { code: NumPad9, .. }, true) => Some(Direction::NORTHEAST),
+        (Key { code: NumPad7, .. }, true) => Some(Direction::NORTHWEST),
+        (Key { code: NumPad3, .. }, true) => Some(Direction::SOUTHEAST),
+        (Key { code: NumPad1, .. }, true) => Some(Direction::SOUTHWEST),
+        (Key { code: NumPad5, .. }, true) => return TookAction,
+        (Key { printable: 'r', .. }, _) => {
             restart(screen, actors, map);
             return NoAction;
         }
@@ -72,6 +76,7 @@ fn restart(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) {
         max_hp: 20,
         atk: 10,
         def: 3,
+        xp: 0,
         on_death: DeathCallBack::Player,
     });
     player.skills.push(Skill::move_attack());
@@ -98,6 +103,7 @@ fn restart(screen: &mut Screen, actors: &mut Vec<Actor>, map: &mut Map) {
             max_hp: 10,
             atk: 4,
             def: 1,
+            xp: 0,
             on_death: DeathCallBack::Monster,
         });
         actors.push(spider);
@@ -189,87 +195,80 @@ fn draw(screen: &mut Screen, actors: &mut [Actor], map: &mut Map, fov_recompute:
     );
 }
 
+fn draw_ui(ui: &mut Ui, screen: &mut Screen, actors: &[Actor]) {
+    if let Some(stats) = actors[0].stats.as_ref() {
+        ui.ui.set_default_foreground(colors::WHITE);
+        ui.ui.print(
+            1,
+            1,
+            format!(
+                "{} HP: {}, ATK: {}, DEF: {}",
+                actors[0].name, stats.hp, stats.atk, stats.def
+            ),
+        );
+    }
+    let height = ui.ui.height();
+    blit(
+        &mut ui.ui,
+        (0, 0),
+        (SCREEN_WIDTH, height),
+        &mut screen.root,
+        (0, SCREEN_HEIGHT - height),
+        1.,
+        1.,
+    );
+
+    ui.msg.clear();
+
+    for y in 0..screen.messages.msg.len() {
+        let msg = &screen.messages.msg[y];
+        ui.msg.set_default_foreground(msg.1);
+        ui.msg.print(1, 1 + y as i32, &msg.0);
+    }
+
+    let height = ui.msg.height();
+    blit(
+        &mut ui.msg,
+        (0, 0),
+        (SCREEN_WIDTH, height),
+        &mut screen.root,
+        (0, SCREEN_HEIGHT - height),
+        1.,
+        1.,
+    );
+}
+
 fn main() {
+    use dogeylvania::ais::Ai;
     let /*mut*/ root = Root::initializer()
         .font("Resources/terminal12x12_gs_ro.png", FontLayout::AsciiInRow)
         .size(SCREEN_WIDTH, SCREEN_HEIGHT)
         .title("Dogeylvania")
         .init();
     tcod::system::set_fps(20);
-    let mut map = Map::new(SCREEN_WIDTH as usize, SCREEN_HEIGHT as usize - 10);
-    generator::generate(&mut map);
-    let mut actors = vec![];
-    let openSpace = generator::find_open_space(&mut map);
-    let mut player = Actor::new(
-        openSpace.0 as i32,
-        openSpace.1 as i32,
-        2 as char,
-        colors::DARK_SKY,
-        "Doge".to_string(),
-        true,
-        true,
-    );
-    player.stats = Some(Stats {
-        hp: 20,
-        max_hp: 20,
-        atk: 10,
-        def: 3,
-        on_death: DeathCallBack::Player,
-    });
-
+    let mut actors = Vec::new();
+    let mut map = Map::new(SCREEN_WIDTH as usize, SCREEN_HEIGHT as usize - 20);
     let mut prev_pos = (-1, -1);
-    player.skills.push(Skill::move_attack());
-    player.skills.push(Skill::hit());
-    actors.push(player);
-
-    use dogeylvania::ais::Ai;
-    for _ in 0..5 {
-        let emptyPos = generator::find_open_space_from(&mut map, openSpace.0, openSpace.1, 5.0);
-        let mut spider = Actor::new(
-            emptyPos.0 as i32,
-            emptyPos.1 as i32,
-            'X',
-            colors::RED,
-            "Tiny Spider".to_string(),
-            true,
-            true,
-        );
-        spider.skills.push(Skill::move_attack());
-        spider.skills.push(Skill::hit());
-        spider.ai = Some(Ai);
-        spider.stats = Some(Stats {
-            hp: 10,
-            max_hp: 10,
-            atk: 4,
-            def: 1,
-            on_death: DeathCallBack::Monster,
-        });
-        actors.push(spider);
-    }
-
     let mut fov_map = FovMap::new(map.width() as i32, map.height() as i32);
-    for y in 0..map.height() {
-        for x in 0..map.width() {
-            fov_map.set(
-                x as i32,
-                y as i32,
-                !map.get(x, y).block_light,
-                !map.get(x, y).block_move,
-            );
-        }
-    }
+    let mut ui = Ui {
+        ui: Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT - map.height() as i32),
+        msg: Offscreen::new(SCREEN_WIDTH, SCREEN_HEIGHT - map.height() as i32 - 3),
+    };
     let mut screen = Screen {
         root: root,
         con: Offscreen::new(map.width() as i32, map.height() as i32),
         fov_map: fov_map,
         fov_enable: true,
         last_fov: true,
-        mouse: Default::default(),
+        messages: MSG { msg: Vec::new() },
     };
+
+    restart(&mut screen, &mut actors, &mut map);
 
     while !screen.root.window_closed() {
         let fov_recompute = prev_pos != (actors[0].x, actors[0].y);
         draw(&mut screen, &mut actors, &mut map, fov_recompute);
+        draw_ui(&mut ui, &mut screen, &actors);
         screen.root.flush();
         for actor in &actors {
             actor.clear(&mut screen);

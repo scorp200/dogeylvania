@@ -15,6 +15,7 @@ pub use tile::tiles;
 
 pub mod dogestuff {
 	use std::cmp;
+	use tcod::colors::{self, Color};
 	use tcod::console::{Offscreen, Root};
 	use tcod::input::{self, Event, Mouse};
 	use tcod::map::Map as FovMap;
@@ -24,7 +25,12 @@ pub mod dogestuff {
 		pub fov_map: FovMap,
 		pub fov_enable: bool,
 		pub last_fov: bool,
-		pub mouse: Mouse,
+		pub messages: MSG,
+	}
+
+	pub struct Ui {
+		pub ui: Offscreen,
+		pub msg: Offscreen,
 	}
 
 	#[derive(PartialEq, Debug)]
@@ -32,6 +38,21 @@ pub mod dogestuff {
 		TookAction,
 		NoAction,
 		Exit,
+	}
+
+	const MAX_MSG: usize = 15;
+
+	pub struct MSG {
+		pub msg: Vec<(String, Color)>,
+	}
+
+	impl MSG {
+		pub fn add_message(&mut self, msg: String, color: Color) {
+			self.msg.insert(0, (msg, color));
+			if self.msg.len() > MAX_MSG {
+				self.msg.pop();
+			}
+		}
 	}
 
 	pub fn mut_two<T>(

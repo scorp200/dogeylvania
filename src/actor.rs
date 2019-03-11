@@ -24,6 +24,7 @@ pub mod actors {
 		pub max_hp: i32,
 		pub atk: i32,
 		pub def: i32,
+		pub xp: i32,
 		pub on_death: DeathCallBack,
 	}
 
@@ -32,13 +33,15 @@ pub mod actors {
 		Monster,
 	}
 
-	fn player_death(actor: &mut Actor) {
-		println!("You died");
+	fn player_death(actor: &mut Actor, screen: &mut Screen) {
+		screen
+			.messages
+			.add_message(format!("You died\nPress R to restart."), colors::RED);
 		actor.char = '%';
 		actor.color = colors::DARK_RED;
 	}
 
-	fn monster_death(actor: &mut Actor) {
+	fn monster_death(actor: &mut Actor, screen: &mut Screen) {
 		println!("{} has died", actor.name);
 		actor.char = '%';
 		actor.color = colors::DARK_RED;
@@ -92,25 +95,30 @@ pub mod actors {
 				.any(|actor| actor.block_move && actor.x == x && actor.y == y)
 		}
 
-		pub fn take_damage(&mut self, dmg: i32) {
+		pub fn take_damage(&mut self, dmg: i32, screen: &mut Screen) -> bool {
 			if let Some(stats) = self.stats.as_mut() {
 				if dmg > 0 {
 					stats.hp -= dmg;
-					println!("{} has now {} hp.", self.name, stats.hp);
+					screen.messages.add_message(
+						format!("{} has now {} hp.", self.name, stats.hp),
+						colors::LIGHT_AMBER,
+					);
 				}
 
 				if stats.hp <= 0 {
 					self.alive = false;
 					match stats.on_death {
 						DeathCallBack::Player => {
-							player_death(self);
+							player_death(self, screen);
 						}
 						DeathCallBack::Monster => {
-							monster_death(self);
+							monster_death(self, screen);
 						}
 					}
+					return true;
 				}
 			}
+			false
 		}
 	}
 }

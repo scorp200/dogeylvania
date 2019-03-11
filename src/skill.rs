@@ -2,6 +2,7 @@ pub mod skills {
 	use crate::actors::*;
 	use crate::dogestuff::{mut_two, Actions, Screen};
 	use crate::maps::*;
+	use tcod::colors::{self, Color};
 	use Actions::*;
 
 	#[derive(Clone, Copy, PartialEq, Debug)]
@@ -73,9 +74,12 @@ pub mod skills {
 						}
 						used
 					} else {
-						println!(
-							"Skill can be used in {} turns",
-							actors[id].skills[skill_id].cool_down_left
+						screen.messages.add_message(
+							format!(
+								"Skill can be used in {} turns",
+								actors[id].skills[skill_id].cool_down_left
+							),
+							colors::LIGHT_AZURE,
 						);
 						NoAction
 					}
@@ -109,14 +113,42 @@ pub mod skills {
 					def = 0;
 				}
 				let dmg = atk - def;
-				println!(
-					"{} hit {} for {} damage.",
-					actors[id].name, actors[other_id].name, dmg
+				screen.messages.add_message(
+					format!(
+						"{} hit {} for {} damage.",
+						actors[id].name, actors[other_id].name, dmg
+					),
+					colors::LIGHT_RED,
 				);
-				actors[other_id].take_damage(dmg);
+				if actors[other_id].take_damage(dmg, screen) {
+					gain_exp(id, screen, actors);
+				}
 				TookAction
 			}
 			None => NoAction,
+		}
+	}
+
+	fn gain_exp(id: usize, screen: &mut Screen, actors: &mut [Actor]) {
+		if let Some(stats) = &mut actors[id].stats.as_mut() {
+			stats.xp += 5;
+			if stats.xp >= 10 {
+				stats.xp = 0;
+				let hp = (rand::random::<f32>() * 2.).ceil() as i32;
+				let atk = (rand::random::<f32>() * 2.).ceil() as i32;
+				let def = (rand::random::<f32>() * 2.).ceil() as i32;
+				stats.max_hp += hp;
+				stats.hp = stats.max_hp;
+				stats.atk += atk;
+				stats.def += def;
+				screen.messages.add_message(
+					format!(
+						"You leveled up!, you gained +{} hp, +{} atk, +{} def",
+						hp, atk, def
+					),
+					colors::GOLD,
+				);
+			}
 		}
 	}
 
@@ -170,7 +202,10 @@ pub mod skills {
 		{
 			actors[id].x = new_x;
 			actors[id].y = new_y;
-			println!("{} moved to {},{}", actors[id].name, new_x, new_y);
+			screen.messages.add_message(
+				format!("{} moved to {},{}", actors[id].name, new_x, new_y),
+				colors::LIGHTER_AZURE,
+			);
 			return TookAction;
 		}
 		NoAction
